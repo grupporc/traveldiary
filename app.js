@@ -46,20 +46,16 @@ app.get("/token", function(req, res){
                     else 
                     {
                         var data = JSON.parse(body).data;
-                        var neg = [];
                         
                         data.forEach(el => {
                             if(el.status=="declined")
-                                neg.push(el.permission);
+                            {
+                                console.log("Per accedere al servizio è necessario autorizzare tutti i permessi richiesti");
+                                res.sendFile("login.html", {"root" : __dirname});
+                            }
                         });
 
-                        if(neg.length==0)
-                            res.sendFile("home.html", {"root" : __dirname});
-                        else
-                        {
-                            //DA FINIRE --> gestire la situazione in cui qualcosa non è garantita
-                            console.log("Non ci ha garantito tutti i permessi\n");
-                        }
+                        res.sendFile("home.html", {"root" : __dirname});
                     }
                 });
             }
@@ -68,7 +64,7 @@ app.get("/token", function(req, res){
 	else
 	{
         //Quando clicca CANCEL
-        console.log("Cliccato\n");
+        console.log("Cliccato cancel\n");
         res.sendFile("login.html", {"root" : __dirname});
 	}
 });
