@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body {
+                background-image: url('img/sfondo.gif');
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="w3-center w3-display-middle" style="width: 100%;">
+            <div>
+                <img src="img/Logo.png" alt="gira il mondo" style="width: 100px; height: 100px;">
+                <h1 style="font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">Travel Diary</h1>
+            </div>
+            <br><br>
+            <div class="w3-bar">
+                <button id="FBlogin-btn" class="w3-button w3-round-xlarge w3-large w3-hover-indigo" style="color:white; background-color: #3b5998; width: 250px;">
+                    <i class="fa fa-facebook-square" style="font-size: 40px;"></i>
+                    <div> <%= accessoFb %> </div>
+                </button>
+                <button id="GGlogin-btn" class="w3-button w3-round-xlarge w3-large w3-hover-deep-orange" style="color:white; background-color: #db4437; width: 250px;">
+                    <i class="fa fa-google" style="font-size: 40px;"></i>
+                    <div> <%= accessoGG %> </div>
+                </button>
+            </div>
+    </div>
+    </body>
+    <script>
+        (function() {
+        document.getElementById('FBlogin-btn').addEventListener('click', function() {
+            window.location = 'http://localhost:8888/loginFB';
+        }, false);
+        /*document.getElementById('GGlogin-btn').addEventListener('click', function() {
+            window.location = 'http://localhost:8888/loginGG';
+        }, false);*/
+        })();
+    </script>
+</html>
