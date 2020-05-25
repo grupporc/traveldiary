@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require("body-parser");
 
+var rpc=require('./rpc_client');
+
 var app = express();
 
 app.set('view engine','ejs');
@@ -13,9 +15,9 @@ app.set('view engine','ejs');
 app.use(cookieParser());
 
 app.use(expressSession({
-    secret: 'provaciao',
+    secret: 'TravelDiary',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
 }));
 
 app.use(function(req,res,next) {
@@ -31,7 +33,7 @@ var FBlogin = "https://www.facebook.com/v7.0/dialog/oauth?client_id="+FBappId+"&
 var FBsecretKey = process.env.SECRETKEYFB;
 
 app.get("/", function(req, res){
-    res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google"});
+    res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:""});
 });
 
 app.get("/loginFB", function(req, res){
@@ -39,7 +41,7 @@ app.get("/loginFB", function(req, res){
         res.redirect(FBlogin);
     else
     {
-        res.render('login.ejs',{accessoFb: "Accesso Effettuato",accessoGG: "Entra con Google"});
+        res.render('login.ejs',{accessoFb: "Accesso Effettuato",accessoGG: "Entra con Google", errore:""});
     }
 });
 
@@ -71,22 +73,34 @@ app.get("/token", function(req, res){
                     else 
                     {
                         var data = JSON.parse(body).data;
-                        
-                        data.forEach(el => {
-                            if(el.status=="declined"){
-                                console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
-                                res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google"});
+                        console.log(data);
+                        var count=0;
+                        if(data!=undefined){
+                            for(i=0;i<data.length;i++){
+                                if(data[i].status!="declined"){
+                                    count++;
+                                } 
                             }
-                                
-                        });
-                        console.log("Permessi garantiti");
-                        //per ora
-                        //res.render('home.ejs',{accesso: "facebook"});
-                        //res.sendFile("views/home.html", {"root" : __dirname});
-                        if(req.session.GGtoken!=null)
-                            res.sendFile("views/home.html", {"root" : __dirname});
-                        else
-                            res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google"});
+                        }
+                        console.log(count);
+                        if(count<4){
+                            console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
+                            res.locals.session.FBtoken=null;
+                            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                        }
+                        else{
+                            console.log("Permessi garantiti");
+                            //getAlbum(req.session.FBtoken);
+                            res.render('home.ejs');
+                            //res.render('home.ejs',{accesso: "Accesso Effettuato con successo"});
+                            /*
+                            if(req.session.GGtoken!=null)
+                                res.redirect('/diario');
+                                //res.render('home.ejs',{accesso: "Accesso Effettuato con successo"});
+                            else
+                                res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google",errore:""});
+                            */
+                        }    
                     }
                 });
             }
@@ -95,19 +109,93 @@ app.get("/token", function(req, res){
 	else
 	{
         req.session.FBtoken=null;
-        //Quando clicca CANCEL
-        console.log("Cliccato Cancel\n");
+        console.log("Annullato o Errore\n");
         if(req.session.GGtoken==null)
-            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google"});
+            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:""});
         else
-            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Accesso Effettuato"});
+            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Accesso Effettuato", errore:""});
 	}
+});
+
+app.get('/diario', function(req,res){
+    request({
+        url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
+        method: 'GET',
+    }, function(error,response,body){
+        if(error){
+            console.log(error);
+        } else{
+            var info=JSON.parse(body);
+            console.log(info);
+            var id_client=info.id;
+            var hometown;
+            if(info.hometowhn!=undefined)
+                hometown=info.hometown.name;
+            else
+                hometown="";
+            console.log("Ottenuti dati utente!");
+            console.log(id_client);
+            console.log(hometown);
+
+            request({
+            url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+            method: 'GET',
+            }, function(error, response, body){
+                if(error) {
+                    console.log(error);
+                } else {
+                    var data=JSON.parse(body).data;
+                    console.log("Ottenute foto utente!");
+                    
+                    //console.log(data);
+                    //creo oggetto da passare alla rpc
+                    var utente={
+                        id: id_client,
+                        hometown: hometown,
+                        photos: data,
+                    }
+                    rpc.creaDiario(utente).then(
+                        function(resp){
+                            console.log("Funzione eseguita con: ");
+                            console.log(resp);
+                            res.send(resp);
+                        }).catch(
+                        function(err){
+                            console.log("Si è verificato un errore nella creazione del diario!");
+                            console.log(err);
+                            res.send("errore");
+                            //che errore mando e quando?
+                        }
+                    );
+                }
+            })
+        }
+    })
 });
 
 //prova stampa sessione
 app.get('/session', function(req, res){
     res.send(req.session);
 });
+
+/*
+app.get('/diario',function(req,res){
+    request({
+        url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+        method: 'GET',
+    }, function(error, response, body){
+        if(error) {
+            console.log(error);
+        } else {
+            var data=JSON.parse(body).data;
+            //res.send(response.statusCode+" "+body)
+            console.log(data);
+            console.log("NUM FOTO:");
+            console.log(data.length);
+            res.send(data);
+        }
+    })
+});*/
 
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);

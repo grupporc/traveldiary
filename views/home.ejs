@@ -1,9 +1,56 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Login</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body {
+                background-image: url('img/sfondo.gif');
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+        </style>
     </head>
-    <body>
-        <div>BENVENUTA</div>
-        <p> Hai effettuato l'accesso con <%= accesso %> </p>
+    <body onload="getDiario();">
+        <div class="w3-display-middle w3-center">
+            <button id="diario" class="w3-btn w3-teal w3-round-xlarge w3-padding-large" style="opacity:0.3;">Ottieni in tuo diario</button>
+            <p id="res">Caricamento diario in corso...</div>
+        </div>
     </body>
+    <script>
+        function getDiario(){
+            var req= new XMLHttpRequest();
+            req.onreadystatechange = gestisciResponse;
+            req.open('GET', "http://localhost:8888/diario", true);
+            req.send();
+        }
+        function gestisciResponse(e) {
+            if(e.target.readyState==4)
+            {
+                if(e.target.status== 200)
+                {
+                    var risp=e.target.responseText;
+                    if(risp=="errore")
+                    {
+                        document.getElementById("res").innerHTML="ERRORE: Impossibile caricare diario!"; 
+                    }
+                    else{
+                        document.getElementById("res").innerHTML="Il tuo diario è pronto!";   
+                        document.getElementById("diario").style.opacity="1"; 
+                        document.getElementById("diario").addEventListener('click',function(){
+                            window.location="";
+                            //pagina dove visualizzeremo diario;
+                        },false);
+                    }
+                }
+                else
+                {
+                    document.getElementById("res").innerHTML="ERRORE: Impossibile caricare diario!"; 
+                }
+            }
+        }
+    </script>
 </html>
