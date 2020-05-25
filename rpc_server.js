@@ -42,20 +42,37 @@ function scaricafoto(utente){
     var fs=require('fs');
     var request=require("request");
 
+    var IDutente=utente.id;
+    var dir='./fbimages/'+IDutente;
+
+    if(!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+    }
+
     const download = (url,path,callback) => {
         request.head(url, (err,res,body) => {
             request(url).pipe(fs.createWriteStream(path)).on('close',callback);
         });
     };
 
-    const url=utente.photos[0].images[0].source;
-    const path = './fbimages/image.png';
-
-    download(url,path, () => {
-        console.log("Done!");
-    });
+    var len=utente.photos.length;
+    console.log("Lunghezza: "+len);
+    for(i=0;i<len;i++){
+        var foto=utente.photos[i];
+        var url= foto.images[0].source;
+        if(foto.place!=undefined && foto.place.location!=undefined){
+            var city=foto.place.location.city;
+            if(city==undefined) continue;
+            var data=foto.created_time+"_"+i;
+            var newdir=dir+"/"+city;
+            if(!fs.existsSync(newdir)){
+                fs.mkdirSync(newdir);
+            }
+            var path=newdir+"/"+data+".png";
+            download(url,path, () => {
+                console.log("Done!");
+            });
+        }   
+    }
     return "Success";
-    //return "errore";
-    //capire dove vanno i return
-
 }

@@ -32,6 +32,16 @@ var FBappId = process.env.APPIDFB;
 var FBlogin = "https://www.facebook.com/v7.0/dialog/oauth?client_id="+FBappId+"&auth_type=rerequest&scope=user_hometown,user_location,user_photos&redirect_uri=http://localhost:8888/token";
 var FBsecretKey = process.env.SECRETKEYFB;
 
+//VARIABILI GOOGLE
+var GGappId= process.env.APPIDGG;
+var GGsecretKey = process.env.SECRETKEYGG;
+var scopefoto = 'https://www.googleapis.com/auth/photoslibrary';
+var scopeCal='https://www.googleapis.com/auth/calendar';
+var GGlogin="https://accounts.google.com/o/oauth2/v2/auth?client_id="+GGappId+"&scope="+scopefoto+" "+scopeCal+"&response_type=code&redirect_uri=http://localhost:8888/tokenGG";
+
+//VAR RAPIDAPI SKYSCANNER
+var rapidkey=process.env.RAPIDAPIKEY;
+
 app.get("/", function(req, res){
     res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:""});
 });
@@ -46,7 +56,12 @@ app.get("/loginFB", function(req, res){
 });
 
 app.get("/loginGG", function(req, res){
-
+    if(req.session.GGtoken==null)
+        res.redirect(GGlogin);
+    else
+    {
+        res.render('login.ejs',{accessoFb: "Entra con Facebook",accessoGG: "Accesso Effettuato", errore:""});
+    }
 });
 
 app.get("/token", function(req, res){
@@ -58,7 +73,7 @@ app.get("/token", function(req, res){
             method: 'GET',
         }, function(error, response, body){
             if(error) {
-                console.log(error);
+                console.log("ERRORE: Fallita la richiesta del token facebook: "+errore);
             } else {
                 req.session.FBtoken = JSON.parse(body).access_token;
                 console.log("Ottenuto il token per il cliente\n");
@@ -83,23 +98,20 @@ app.get("/token", function(req, res){
                             }
                         }
                         console.log(count);
-                        if(count<4){
+                        if(data!=undefined && count<4){
                             console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
-                            res.locals.session.FBtoken=null;
-                            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                            req.session.FBtoken=null;
+                            if(req.session.GGtoken==null)
+                                res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                            else
+                                res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                         }
                         else{
                             console.log("Permessi garantiti");
-                            //getAlbum(req.session.FBtoken);
-                            res.render('home.ejs');
-                            //res.render('home.ejs',{accesso: "Accesso Effettuato con successo"});
-                            /*
                             if(req.session.GGtoken!=null)
-                                res.redirect('/diario');
-                                //res.render('home.ejs',{accesso: "Accesso Effettuato con successo"});
+                                res.redirect('/home');
                             else
                                 res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google",errore:""});
-                            */
                         }    
                     }
                 });
@@ -117,6 +129,52 @@ app.get("/token", function(req, res){
 	}
 });
 
+app.get("/tokenGG", function(req, res){
+    //andato a buon fine
+    if (req.query.code){
+        var autcode=req.query.code;
+        console.log(autcode);
+        request({
+            url: "https://oauth2.googleapis.com/token?client_id="+GGappId+"&client_secret="+GGsecretKey+"&code="+autcode+"&redirect_uri=http://localhost:8888/tokenGG&grant_type=authorization_code",
+            method: 'POST',
+        },function(error, response, body){
+            if(error) {
+                console.log("ERRORE: Fallita la richiesta del token google: "+errore);
+            }
+            else{
+                var info=JSON.parse(body);
+                console.log(info);
+                if(info.scope.length<2)
+                {
+                    //non ha garantito tutti i permessi
+                    console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
+                    req.session.GGtoken=null; 
+                    if(req.session.FBtoken==null)
+                        res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                    else
+                        res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                }
+                else{
+                    req.session.GGtoken = info.access_token;
+                    console.log("Permessi garantiti");
+                    if(req.session.FBtoken!=null)
+                        res.redirect('/home');
+                    else
+                        res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Accesso Effettuato",errore:""});
+                }
+            }
+        });            
+    }
+    else{
+        req.session.GGtoken=null;
+        console.log("Annullato o Errore\n");
+        if(req.session.FBtoken==null)
+            res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:""});
+        else
+            res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:""});
+    }
+});
+
 app.get('/diario', function(req,res){
     request({
         url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
@@ -126,7 +184,6 @@ app.get('/diario', function(req,res){
             console.log(error);
         } else{
             var info=JSON.parse(body);
-            console.log(info);
             var id_client=info.id;
             var hometown;
             if(info.hometowhn!=undefined)
@@ -164,7 +221,6 @@ app.get('/diario', function(req,res){
                             console.log("Si è verificato un errore nella creazione del diario!");
                             console.log(err);
                             res.send("errore");
-                            //che errore mando e quando?
                         }
                     );
                 }
@@ -173,34 +229,120 @@ app.get('/diario', function(req,res){
     })
 });
 
-//prova stampa sessione
-app.get('/session', function(req, res){
-    res.send(req.session);
+
+app.get('/home',function(req,res){
+    res.render('home.ejs');
 });
 
-/*
-app.get('/diario',function(req,res){
+app.post('/cercaViaggio',function(req,res){
+    var partenza=req.body.partenza;
+    var arrivo=req.body.arrivo;
+    var data=req.body.data;
+    
+    //cerco l'aeroporto della città partenza
     request({
-        url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+        url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IT/EUR/en-GB/?query="+partenza,
         method: 'GET',
-    }, function(error, response, body){
-        if(error) {
-            console.log(error);
-        } else {
-            var data=JSON.parse(body).data;
-            //res.send(response.statusCode+" "+body)
-            console.log(data);
-            console.log("NUM FOTO:");
-            console.log(data.length);
-            res.send(data);
+        headers: {
+            "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
+            "x-rapidapi-key": rapidkey,
+            "useQueryString": true
         }
-    })
-});*/
+    }, function(error,response,body){
+        if(error)
+            console.log(error);
+        else{
+            var info=JSON.parse(body);
+            var aerP=info.Places[0].PlaceId;
+            console.log(aerP);
+
+            //cerco l'aeroporto della città di arrivo
+            request({
+                url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IT/EUR/en-GB/?query="+arrivo,
+                method: 'GET',
+                headers: {
+                    "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
+                    "x-rapidapi-key": rapidkey,
+                    "useQueryString": true
+                }
+            }, function(error,response,body){
+                if(error)
+                    console.log(error);
+                else{
+                    var info=JSON.parse(body);
+                    var aerA=info.Places[0].PlaceId;
+                    console.log(aerA);
+                    //cerco voli
+                    request({
+                        url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/IT/EUR/en-GB/"+aerP+"/"+aerA+"/"+data,
+                        method: 'GET',
+                        headers: {
+                            "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
+                            "x-rapidapi-key": rapidkey,
+                            "useQueryString": true
+                        }
+                    }, function(error,response,body){
+                        if(error)
+                            console.log(error);
+                        else{
+                            var info=JSON.parse(body);
+                            res.render('voli.ejs',{voli: parseHTML(info)});
+                        }
+                    });
+                }
+            });
+        }
+    });    
+});
+
+function parseHTML(json) {
+
+    var quotes=json.Quotes;
+    var places=json.Places;
+    var compagnie=json.Carriers;
+    var risultato="<h1> Voli trovati: </h1>";
+    var num=quotes.length;
+    if(num==0)
+        return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
+    for(var i=0; i<num; i++) 
+    {
+        var prezzo = quotes[i].MinPrice;
+        var isdirect= quotes[i].Direct;
+        var data=quotes[i].QuoteDateTime.split('T');
+        var date=data[0].split('-');
+        var gg=parseInt(date[2]);
+        var mm=parseInt(date[1]);
+        var y=parseInt(date[0]);
+        var ora=data[1];
+
+        risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+" Ora: "+ora+"<br>";
+        if(isdirect=="true")
+            risultato+="volo diretto <br>";
+        var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
+        for(j=0;j<compagnie.length;j++){
+            if(compagnie[j].CarrierId == carrierid){
+                risultato+="Compagnia: "+compagnie[j].Name+"<br>";
+                j=compagnie.length;
+            }
+        }
+        var originid=quotes[i].OutboundLeg.OriginId;
+        var destid=quotes[i].OutboundLeg.DestinationId;
+        var orig;
+        var dest;
+        for(j=0;j<places.length;j++){
+            if(places[j].PlaceId == originid)
+                orig=places[j].Name;
+            else if(places[j].PlaceId == destid)
+                dest=places[j].Name;
+        }
+        risultato+="Aeroporto di Partenza: "+orig+"<br> Aeroporto di Arrivo: "+dest+"<hr>";
+    }
+    return risultato+"<br><br>";
+};
 
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);
 });
-
 
 //Per visualizzare le immagini
 app.get("/img/Logo.png", function(req, res){
