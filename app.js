@@ -185,7 +185,7 @@ app.get('/diario', function(req,res){
         } else{
             var info=JSON.parse(body);
             var id_client=info.id;
-            req.session.id=id_client;
+            req.session.id_client=id_client;
             var hometown;
             if(info.hometowhn!=undefined)
                 hometown=info.hometown.name;
@@ -216,8 +216,46 @@ app.get('/diario', function(req,res){
                         function(resp){
                             console.log("Funzione eseguita con Successo!");
                             //mi ritorna i viaggi come stringa separata da -
-                            console.log(resp);
-                            res.send(resp);
+                            var arrviaggi = resp.split('-');
+                            //carico sul database 
+                            if(req.session.rev==null){
+                                //prima chiamata
+                                console.log(req.session.id_client);
+                                request({
+                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                    method: 'PUT',
+                                    body: {viaggi: arrviaggi},
+                                    json: true,
+                                },function(error,response,body){
+                                    if(error){
+                                        console.log(error);
+                                    } else{
+                                        //var info=JSON.parse(body);
+                                        req.session.rev=body.rev;
+                                        console.log("Aggiunto al database");
+                                        res.send("Success");
+                                    }
+                                });
+                            }
+                            else{
+                                request({
+                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                    method: 'PUT',
+                                    body: {_rev:req.session.rev, viaggi: arrviaggi},
+                                    json: true,
+                                },function(error,response,body){
+                                    if(error){
+                                        console.log(error);
+                                    } else{
+                                        //var info=JSON.parse(body);
+                                        req.session.rev=body.rev;
+                                        console.log("Aggiornato database");
+                                        res.send("Success");
+                                    }
+                                });
+                            }
+                            //console.log(resp);
+                            //res.send(resp);
                         }).catch(
                         function(err){
                             console.log("Si è verificato un errore nella creazione del diario!");
@@ -347,9 +385,19 @@ function parseHTML(json) {
     return risultato+"<br><br>";
 };
 
-app.get('listaViaggi',function(req,res){
+app.get('/listaViaggi',function(req,res){
     //get da couch db
-
+    request({
+        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+        method: 'GET',
+    },function(error,response,body){
+        if(error){
+            console.log(error);
+        } else{
+            var info=JSON.parse(body);
+            res.render('mieiviaggi.ejs',{count: info.viaggi.length, viaggi: info.viaggi});
+        }
+    });
 });
 
 app.listen(8888, function() {

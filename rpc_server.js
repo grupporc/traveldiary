@@ -60,7 +60,7 @@ function scaricafoto(utente){
         var url= foto.images[0].source;
         if(foto.place!=undefined && foto.place.location!=undefined){
             var city=foto.place.location.city;
-            if(city==undefined && city!=utente.hometown) continue;
+            if(city==undefined || city==utente.hometown) continue;
             var data=foto.created_time+"_"+i;
             var newdir=dir+"/"+city;
             if(!fs.existsSync(newdir)){
