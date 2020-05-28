@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body {
+                background-image: url('img/sfondo.gif');
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="w3-display-middle w3-center">
+            <h4 class="w3-text-teal" style="text-align:left; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"> My Travel Diary</h4>
+            <button id="viaggi" class="w3-btn w3-teal w3-round-xlarge w3-padding-large"">I miei viaggi</button>
+        </div>
+    </body>
+    <script>
+        (function() {
+        document.getElementById('viaggi').addEventListener('click', function() {
+            window.location = 'http://localhost:8888/listaViaggi';
+        }, false)})();
+    </script>
+</html>

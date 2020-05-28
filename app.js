@@ -72,10 +72,9 @@ app.get("/token", function(req, res){
             url: "https://graph.facebook.com/v7.0/oauth/access_token?client_id="+FBappId+"&redirect_uri=http://localhost:8888/token&client_secret="+FBsecretKey+"&code="+req.query.code, //URL to hit
             method: 'GET',
         }, function(error, response, body){
-            if(error) 
+            if(error) {
                 console.log("ERRORE: Fallita la richiesta del token facebook: "+errore);
-            else 
-            {
+            } else {
                 req.session.FBtoken = JSON.parse(body).access_token;
                 console.log("Ottenuto il token per il cliente\n");
 
@@ -91,17 +90,15 @@ app.get("/token", function(req, res){
                         var data = JSON.parse(body).data;
                         console.log(data);
                         var count=0;
-                        if(data!=undefined)
-                        {
-                            for(i=0;i<data.length;i++)
-                            {
-                                if(data[i].status!="declined")
+                        if(data!=undefined){
+                            for(i=0;i<data.length;i++){
+                                if(data[i].status!="declined"){
                                     count++;
+                                } 
                             }
                         }
                         console.log(count);
-                        if(data!=undefined && count<4)
-                        {
+                        if(data!=undefined && count<4){
                             console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
                             req.session.FBtoken=null;
                             if(req.session.GGtoken==null)
@@ -109,8 +106,7 @@ app.get("/token", function(req, res){
                             else
                                 res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                         }
-                        else
-                        {
+                        else{
                             console.log("Permessi garantiti");
                             if(req.session.GGtoken!=null)
                                 res.redirect('/home');
@@ -135,20 +131,17 @@ app.get("/token", function(req, res){
 
 app.get("/tokenGG", function(req, res){
     //andato a buon fine
-    if (req.query.code)
-    {
+    if (req.query.code){
         var autcode=req.query.code;
         console.log(autcode);
         request({
             url: "https://oauth2.googleapis.com/token?client_id="+GGappId+"&client_secret="+GGsecretKey+"&code="+autcode+"&redirect_uri=http://localhost:8888/tokenGG&grant_type=authorization_code",
             method: 'POST',
         },function(error, response, body){
-            if(error)
-            {
+            if(error) {
                 console.log("ERRORE: Fallita la richiesta del token google: "+errore);
             }
-            else
-            {
+            else{
                 var info=JSON.parse(body);
                 console.log(info);
                 if(info.scope.length<2)
@@ -161,8 +154,7 @@ app.get("/tokenGG", function(req, res){
                     else
                         res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                 }
-                else
-                {
+                else{
                     req.session.GGtoken = info.access_token;
                     console.log("Permessi garantiti");
                     if(req.session.FBtoken!=null)
@@ -173,8 +165,7 @@ app.get("/tokenGG", function(req, res){
             }
         });            
     }
-    else
-    {
+    else{
         req.session.GGtoken=null;
         console.log("Annullato o Errore\n");
         if(req.session.FBtoken==null)
@@ -189,17 +180,12 @@ app.get('/diario', function(req,res){
         url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
         method: 'GET',
     }, function(error,response,body){
-        if(error)
-        {
+        if(error){
             console.log(error);
-        } 
-        else
-        {
+        } else{
             var info=JSON.parse(body);
             var id_client=info.id;
-
             req.session.id=id_client;
-
             var hometown;
             if(info.hometowhn!=undefined)
                 hometown=info.hometown.name;
@@ -213,12 +199,9 @@ app.get('/diario', function(req,res){
             url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
             method: 'GET',
             }, function(error, response, body){
-                if(error)
-                {
+                if(error) {
                     console.log(error);
-                } 
-                else 
-                {
+                } else {
                     var data=JSON.parse(body).data;
                     console.log("Ottenute foto utente!");
                     
@@ -231,7 +214,8 @@ app.get('/diario', function(req,res){
                     }
                     rpc.creaDiario(utente).then(
                         function(resp){
-                            console.log("Funzione eseguita con: ");
+                            console.log("Funzione eseguita con Successo!");
+                            //mi ritorna i viaggi come stringa separata da -
                             console.log(resp);
                             res.send(resp);
                         }).catch(
@@ -252,6 +236,11 @@ app.get('/home',function(req,res){
     res.render('home.ejs');
 });
 
+app.get('/paginaDiario',function(req,res){
+    //temporaneo... poi sicuramente cambierà ma la pagina è quella 
+    res.render('diario.ejs');
+});
+
 app.post('/cercaViaggio',function(req,res){
     var partenza=req.body.partenza;
     var arrivo=req.body.arrivo;
@@ -269,8 +258,7 @@ app.post('/cercaViaggio',function(req,res){
     }, function(error,response,body){
         if(error)
             console.log(error);
-        else
-        {
+        else{
             var info=JSON.parse(body);
             var aerP=info.Places[0].PlaceId;
             console.log(aerP);
@@ -287,8 +275,7 @@ app.post('/cercaViaggio',function(req,res){
             }, function(error,response,body){
                 if(error)
                     console.log(error);
-                else
-                {
+                else{
                     var info=JSON.parse(body);
                     var aerA=info.Places[0].PlaceId;
                     console.log(aerA);
@@ -304,8 +291,7 @@ app.post('/cercaViaggio',function(req,res){
                     }, function(error,response,body){
                         if(error)
                             console.log(error);
-                        else
-                        {
+                        else{
                             var info=JSON.parse(body);
                             res.render('voli.ejs',{voli: parseHTML(info)});
                         }
@@ -360,6 +346,11 @@ function parseHTML(json) {
     }
     return risultato+"<br><br>";
 };
+
+app.get('listaViaggi',function(req,res){
+    //get da couch db
+
+});
 
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);

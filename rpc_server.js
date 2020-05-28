@@ -25,9 +25,6 @@ amqp.connect('amqp://localhost', function(error0, connection) {
 
             var r=scaricafoto(utente);
 
-            //var r = fibonacci(n);
-            //funzione che mette le cartelle
-
             channel.sendToQueue(msg.properties.replyTo,
                 Buffer.from(r), {
                     correlationId: msg.properties.correlationId
@@ -57,15 +54,17 @@ function scaricafoto(utente){
 
     var len=utente.photos.length;
     console.log("Lunghezza: "+len);
+    var viaggi="";
     for(i=0;i<len;i++){
         var foto=utente.photos[i];
         var url= foto.images[0].source;
         if(foto.place!=undefined && foto.place.location!=undefined){
             var city=foto.place.location.city;
-            if(city==undefined) continue;
+            if(city==undefined && city!=utente.hometown) continue;
             var data=foto.created_time+"_"+i;
             var newdir=dir+"/"+city;
             if(!fs.existsSync(newdir)){
+                viaggi+=city+"-";
                 fs.mkdirSync(newdir);
             }
             var path=newdir+"/"+data+".png";
@@ -74,5 +73,5 @@ function scaricafoto(utente){
             });
         }   
     }
-    return "Success";
+    return viaggi;
 }
