@@ -298,6 +298,8 @@ app.post('/cercaViaggio',function(req,res){
             console.log(error);
         else{
             var info=JSON.parse(body);
+            if(info.Places[0]==undefined) 
+                res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>"});
             var aerP=info.Places[0].PlaceId;
             console.log(aerP);
 
@@ -315,6 +317,8 @@ app.post('/cercaViaggio',function(req,res){
                     console.log(error);
                 else{
                     var info=JSON.parse(body);
+                    if(info.Places[0]==undefined) 
+                        res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>"});
                     var aerA=info.Places[0].PlaceId;
                     console.log(aerA);
                     //cerco voli
@@ -331,7 +335,7 @@ app.post('/cercaViaggio',function(req,res){
                             console.log(error);
                         else{
                             var info=JSON.parse(body);
-                            res.render('voli.ejs',{voli: parseHTML(info)});
+                            res.render('voli.ejs',{voli: parseHTML(info,data)});
                         }
                     });
                 }
@@ -340,9 +344,10 @@ app.post('/cercaViaggio',function(req,res){
     });    
 });
 
-function parseHTML(json) {
-
+function parseHTML(json,d) {
+    if(json==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
     var quotes=json.Quotes;
+    if(quotes==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
     var places=json.Places;
     var compagnie=json.Carriers;
     var risultato="<h1> Voli trovati: </h1>";
@@ -353,14 +358,16 @@ function parseHTML(json) {
     {
         var prezzo = quotes[i].MinPrice;
         var isdirect= quotes[i].Direct;
-        var data=quotes[i].QuoteDateTime.split('T');
+        var data=quotes[i].OutboundLeg.DepartureDate.split('T');
         var date=data[0].split('-');
         var gg=parseInt(date[2]);
         var mm=parseInt(date[1]);
         var y=parseInt(date[0]);
-        var ora=data[1];
 
-        risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+" Ora: "+ora+"<br>";
+        var g=parseInt(d.split('-')[2]);
+        if(g != gg) continue;
+
+        risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
         if(isdirect=="true")
             risultato+="volo diretto <br>";
         var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
