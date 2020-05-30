@@ -6,6 +6,7 @@ var expressSession = require('express-session');
 var bodyParser = require("body-parser");
 
 var rpc=require('./rpc_client');
+var eventi = require('./eventi');
 
 var app = express();
 
@@ -275,6 +276,23 @@ app.get('/home',function(req,res){
 });
 
 app.get('/paginaDiario',function(req,res){
+    var files = fs.readdirSync("fbimages/"+req.session.id_client);
+    var num_dir = files.length;
+    for(var i=0; i<num_dir; i++){
+        if(files[i] == '.DS_Store') continue;
+        var locations = files[i];
+        console.log(locations);
+
+        photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
+                
+        var num_photo = photos.length;
+            
+        for(var j=0; j<num_photo; j++){
+            var data= photos[j].split('T')[0];
+            console.log(data);
+            eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
+        }
+    }
     //temporaneo... poi sicuramente cambierà ma la pagina è quella 
     res.render('diario.ejs');
 });
