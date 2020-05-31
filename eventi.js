@@ -45,7 +45,8 @@ function aggiungiEvento(a_t,req,res,citta,data){
         },
         'start':{
         'date': data,
-        }
+        },
+        'visibility': 'public'
     };
     request({headers:headers, url:url, method:'POST', body:JSON.stringify(body1)}, function(error,response,body){
         console.log('Aggiunto evento'+citta);

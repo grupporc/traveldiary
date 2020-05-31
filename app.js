@@ -4,6 +4,7 @@ var request = require('request');
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require("body-parser");
+var fs=require("fs");
 
 var rpc=require('./rpc_client');
 var eventi = require('./eventi');
@@ -52,6 +53,8 @@ app.get("/loginFB", function(req, res){
         res.redirect(FBlogin);
     else
     {
+        if(req.session.GGtoken!=null)
+            res.redirect('/home');
         res.render('login.ejs',{accessoFb: "Accesso Effettuato",accessoGG: "Entra con Google", errore:""});
     }
 });
@@ -61,6 +64,8 @@ app.get("/loginGG", function(req, res){
         res.redirect(GGlogin);
     else
     {
+        if(req.session.FBtoken!=null)
+            res.redirect('/home');
         res.render('login.ejs',{accessoFb: "Entra con Facebook",accessoGG: "Accesso Effettuato", errore:""});
     }
 });
@@ -293,8 +298,22 @@ app.get('/paginaDiario',function(req,res){
             eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
         }
     }
-    //temporaneo... poi sicuramente cambierà ma la pagina è quella 
-    res.render('diario.ejs');
+    var options={
+        url:'https://www.googleapis.com/calendar/v3/calendars/primary',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer '+req.session.GGtoken,
+        }
+    };
+    request(options, function(error, response, body){
+        if(error){
+            console.log(error);
+        }
+        else{
+            var id_calendar=JSON.parse(body).id;
+            res.render('diario.ejs',{idCal: id_calendar});
+        }
+    });
 });
 
 app.post('/cercaViaggio',function(req,res){
