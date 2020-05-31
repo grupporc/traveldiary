@@ -182,97 +182,139 @@ app.get("/tokenGG", function(req, res){
 });
 
 app.get('/diario', function(req,res){
-    request({
-        url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
-        method: 'GET',
-    }, function(error,response,body){
-        if(error){
-            console.log(error);
-        } else{
-            var info=JSON.parse(body);
-            var id_client=info.id;
-            req.session.id_client=id_client;
-            var hometown;
-            if(info.hometowhn!=undefined)
-                hometown=info.hometown.name;
-            else
-                hometown="";
-            console.log("Ottenuti dati utente!");
-            console.log(id_client);
-            console.log(hometown);
-
-            request({
-            url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+    //se avevo già caricato il diario
+    if(req.session.caricato==true) res.send("Success");
+    else{
+        request({
+            url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
             method: 'GET',
-            }, function(error, response, body){
-                if(error) {
-                    console.log(error);
-                } else {
-                    var data=JSON.parse(body).data;
-                    console.log("Ottenute foto utente!");
-                    
-                    //console.log(data);
-                    //creo oggetto da passare alla rpc
-                    var utente={
-                        id: id_client,
-                        hometown: hometown,
-                        photos: data,
-                    }
-                    rpc.creaDiario(utente).then(
-                        function(resp){
-                            console.log("Funzione eseguita con Successo!");
-                            //mi ritorna i viaggi come stringa separata da -
-                            var arrviaggi = resp.split('-');
-                            //carico sul database 
-                            if(req.session.rev==null){
-                                //prima chiamata
-                                console.log(req.session.id_client);
-                                request({
-                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
-                                    method: 'PUT',
-                                    body: {viaggi: arrviaggi},
-                                    json: true,
-                                },function(error,response,body){
-                                    if(error){
-                                        console.log(error);
-                                    } else{
-                                        //var info=JSON.parse(body);
-                                        req.session.rev=body.rev;
-                                        console.log("Aggiunto al database");
-                                        res.send("Success");
-                                    }
-                                });
-                            }
-                            else{
-                                request({
-                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
-                                    method: 'PUT',
-                                    body: {_rev:req.session.rev, viaggi: arrviaggi},
-                                    json: true,
-                                },function(error,response,body){
-                                    if(error){
-                                        console.log(error);
-                                    } else{
-                                        //var info=JSON.parse(body);
-                                        req.session.rev=body.rev;
-                                        console.log("Aggiornato database");
-                                        res.send("Success");
-                                    }
-                                });
-                            }
-                            //console.log(resp);
-                            //res.send(resp);
-                        }).catch(
-                        function(err){
-                            console.log("Si è verificato un errore nella creazione del diario!");
-                            console.log(err);
-                            res.send("errore");
+        }, function(error,response,body){
+            if(error){
+                console.log(error);
+            } else{
+                var info=JSON.parse(body);
+                var id_client=info.id;
+                req.session.id_client=id_client;
+                var hometown;
+                if(info.hometowhn!=undefined)
+                    hometown=info.hometown.name;
+                else
+                    hometown="";
+                console.log("Ottenuti dati utente!");
+                console.log(id_client);
+                console.log(hometown);
+
+                request({
+                url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+                method: 'GET',
+                }, function(error, response, body){
+                    if(error) {
+                        console.log(error);
+                    } else {
+                        var data=JSON.parse(body).data;
+                        console.log("Ottenute foto utente!");
+                        
+                        //console.log(data);
+                        //creo oggetto da passare alla rpc
+                        var utente={
+                            id: id_client,
+                            hometown: hometown,
+                            photos: data,
                         }
-                    );
-                }
-            })
-        }
-    })
+                        rpc.creaDiario(utente).then(
+                            function(resp){
+                                console.log("Funzione eseguita con Successo!");
+                                //mi ritorna i viaggi come stringa separata da -
+                                var arrviaggi = resp.split('-');
+                                //se vuoto non aggiorno il database
+                                if(arrviaggi[0]!=""){
+                                    //carico sul database 
+                                    if(req.session.rev==null){
+                                        //vedo se il mio documento è presente nel db
+                                        request({
+                                            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            methond: 'GET',
+                                            json: true
+                                        }, function(error,response,body){
+                                            if(error){
+                                                if(response.statusCode==404){
+                                                    //doc non esistente --> lo creo
+                                                    console.log(req.session.id_client);
+                                                    request({
+                                                        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                        method: 'PUT',
+                                                        body: {viaggi: arrviaggi},
+                                                        json: true,
+                                                    },function(error,response,body){
+                                                        if(error){
+                                                            console.log(error);
+                                                        } else{
+                                                            req.session.rev=body.rev;
+                                                            console.log("Aggiunto al database");
+                                                            req.session.caricato=true;
+                                                            res.send("Success");
+                                                        }
+                                                    });
+                                                }
+                                            } 
+                                            else{
+                                                req.session.rev=body._rev;
+                                                console.log("doc esistente");
+                                                //aggiorno il doc esistente
+                                                request({
+                                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                    method: 'PUT',
+                                                    body: {_rev:req.session.rev, viaggi: arrviaggi},
+                                                    json: true,
+                                                },function(error,response,body){
+                                                    if(error){
+                                                        console.log(error);
+                                                    } else{
+                                                        //var info=JSON.parse(body);
+                                                        req.session.rev=body.rev;
+                                                        console.log("Aggiornato database");
+                                                        req.session.caricato=true;
+                                                        res.send("Success");
+                                                    }
+                                                }); 
+                                            }
+                                        });
+                                    }
+                                    else{
+                                        request({
+                                            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            method: 'PUT',
+                                            body: {_rev:req.session.rev, viaggi: arrviaggi},
+                                            json: true,
+                                        },function(error,response,body){
+                                            if(error){
+                                                console.log(error);
+                                            } else{
+                                                //var info=JSON.parse(body);
+                                                req.session.rev=body.rev;
+                                                console.log("Aggiornato database");
+                                                req.session.caricato=true;
+                                                res.send("Success");
+                                            }
+                                        });
+                                    }
+                                }
+                                else{
+                                    req.session.caricato=true;
+                                    res.send("Success");
+                                }
+                            }).catch(
+                            function(err){
+                                console.log("Si è verificato un errore nella creazione del diario!");
+                                console.log(err);
+                                res.send("errore");
+                            }
+                        );
+                    }
+                })
+            }
+        })
+    }
 });
 
 
