@@ -33,7 +33,7 @@ function creaDiario(utente){
                             setTimeout(function() {
                                 connection.close();
                                 //process.exit(0);
-                            }, 500);
+                            }, 800);
                         }
                     }, {
                         noAck: true

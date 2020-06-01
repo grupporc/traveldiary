@@ -31,12 +31,25 @@
             button{
                 outline: none;
             }
+            button:hover{
+                color:gray;
+            }
         </style>
     </head>
     <body>
         <div class="w3-center" style="width: 100%;">
             <i class="fa fa-home fa-3x" onclick="window.history.go(-1);"></i>
+            <br>
             <div style="width: 60%; margin-left: 20%;"> <%- voli %> </div>
+            <br>
+            <button id="calendario" class="w3-btn w3-teal w3-round-xlarge w3-padding-large"> <%= button %> </button>
         </div>
     </body>
+    <script>
+        (function() {
+        document.getElementById('calendario').addEventListener('click', function() {
+            window.location = 'http://localhost:8888/voloCalendario?data=<%= data %>&luogo=<%= luogo %>';
+        }, false);
+        })();
+    </script>
 </html>

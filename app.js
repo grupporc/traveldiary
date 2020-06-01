@@ -8,6 +8,7 @@ var fs=require("fs");
 
 var rpc=require('./rpc_client');
 var eventi = require('./eventi');
+var foto= require('./foto');
 
 var app = express();
 
@@ -323,20 +324,23 @@ app.get('/home',function(req,res){
 });
 
 app.get('/paginaDiario',function(req,res){
+    //prova foto
+    foto.caricaFoto(req.session.GGtoken,req,res);
+    //
     var files = fs.readdirSync("fbimages/"+req.session.id_client);
     var num_dir = files.length;
     for(var i=0; i<num_dir; i++){
-        if(files[i] == '.DS_Store') continue;
         var locations = files[i];
-        console.log(locations);
+        if(locations == '.DS_Store') continue;
+        console.log("locations: "+locations);
 
         photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
                 
         var num_photo = photos.length;
-            
         for(var j=0; j<num_photo; j++){
+            if(photos[j]=='.DS_Store') continue;
             var data= photos[j].split('T')[0];
-            console.log(data);
+            console.log("data "+data);
             eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
         }
     }
@@ -414,13 +418,25 @@ app.post('/cercaViaggio',function(req,res){
                             console.log(error);
                         else{
                             var info=JSON.parse(body);
-                            res.render('voli.ejs',{voli: parseHTML(info,data)});
+                            res.render('voli.ejs',{voli: parseHTML(info,data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
                         }
                     });
                 }
             });
         }
     });    
+});
+
+app.get('/voloCalendario',function(req,res){
+    var data=req.query.data;
+    var luogo=req.query.luogo;
+    if(data!="" && luogo!=""){
+        eventi.controllaEvento(req.session.GGtoken, req, res, luogo, data);
+        res.render('voli.ejs',{voli: "<br><br><br><br><br><h3>Aggiunto evento al calendario!</h3><br><br>", data: "", luogo: "", button: "Home"});
+    }
+    else{
+        res.redirect('/home');
+    } 
 });
 
 function parseHTML(json,d) {

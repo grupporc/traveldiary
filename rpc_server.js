@@ -67,7 +67,7 @@ function scaricafoto(utente){
                 viaggi+=city+"-";
                 fs.mkdirSync(newdir);
             }
-            var path=newdir+"/"+data+".png";
+            var path=newdir+"/"+data+".jpg";
             download(url,path, () => {
                 console.log("Done!");
             });
