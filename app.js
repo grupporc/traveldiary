@@ -486,49 +486,62 @@ app.post('/cercaViaggio',function(req,res){
         {
             var info=JSON.parse(body);
             if(info.Places[0]==undefined)
-                res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>'})
-            var aerP=info.Places[0].PlaceId;
-            console.log(aerP);
+                res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>', data: "", luogo: "", button: "Torna alla home"});
+            else
+            {
+                var aerP=info.Places[0].PlaceId;
+                console.log(aerP);
 
-            //cerco l'aeroporto della città di arrivo
-            request({
-                url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IT/EUR/en-GB/?query="+arrivo,
-                method: 'GET',
-                headers: {
-                    "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
-                    "x-rapidapi-key": rapidkey,
-                    "useQueryString": true
-                }
-            }, function(error,response,body){
-                if(error)
-                    console.log(error);
-                else
-                {
-                    var info=JSON.parse(body);
-                    if(info.Places[0]==undefined)
-                        res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>'})
-                    var aerA=info.Places[0].PlaceId;
-                    console.log(aerA);
-                    //cerco voli
-                    request({
-                        url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/IT/EUR/en-GB/"+aerP+"/"+aerA+"/"+data,
-                        method: 'GET',
-                        headers: {
-                            "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
-                            "x-rapidapi-key": rapidkey,
-                            "useQueryString": true
-                        }
-                    }, function(error,response,body){
-                        if(error)
-                            console.log(error);
+                //cerco l'aeroporto della città di arrivo
+                request({
+                    url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IT/EUR/en-GB/?query="+arrivo,
+                    method: 'GET',
+                    headers: {
+                        "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
+                        "x-rapidapi-key": rapidkey,
+                        "useQueryString": true
+                    }
+                }, function(error,response,body){
+                    if(error)
+                        console.log(error);
+                    else
+                    {
+                        var info=JSON.parse(body);
+                        if(info.Places[0]==undefined)
+                            res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>', data: "", luogo: "", button: "Torna alla home"});
                         else
                         {
-                            var info=JSON.parse(body);
-                            res.render('voli.ejs',{voli: parseHTML(info, data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
+                            var aerA=info.Places[0].PlaceId;
+                            console.log(aerA);
+                            //cerco voli
+                            request({
+                                url: "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/IT/EUR/en-GB/"+aerP+"/"+aerA+"/"+data,
+                                method: 'GET',
+                                headers: {
+                                    "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
+                                    "x-rapidapi-key": rapidkey,
+                                    "useQueryString": true
+                                }
+                            }, function(error,response,body){
+                                if(error)
+                                    console.log(error);
+                                else
+                                {
+                                    var info=JSON.parse(body);
+                                    if(info==undefined || info.Quotes==undefined || info.Quotes.length==0)
+                                    {
+                                        res.render('voli.ejs', {voli: parseHTML(info, data), data: "", luogo: "", button: "Torna alla home"})
+                                    }
+                                    else
+                                    {
+                                        res.render('voli.ejs',{voli: parseHTML(info, data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
+                                    }
+                                }
+                            });
                         }
-                    });
-                }
-            });
+                    }
+                });
+            }
         }
     });    
 });
@@ -557,44 +570,47 @@ function parseHTML(json, d) {
     var num=quotes.length;
     if(num==0)
         return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
-    for(var i=0; i<num; i++) 
+    else
     {
-        var prezzo = quotes[i].MinPrice;
-        var isdirect= quotes[i].Direct;
-        var data=quotes[i].OutboundLeg.DepartureDate.split('T');
-        var date=data[0].split('-');
-        var gg=parseInt(date[2]);
-        var mm=parseInt(date[1]);
-        var y=parseInt(date[0]);
+        for(var i=0; i<num; i++) 
+        {
+            var prezzo = quotes[i].MinPrice;
+            var isdirect= quotes[i].Direct;
+            var data=quotes[i].OutboundLeg.DepartureDate.split('T');
+            var date=data[0].split('-');
+            var gg=parseInt(date[2]);
+            var mm=parseInt(date[1]);
+            var y=parseInt(date[0]);
 
-        var g=parseInt(d.split('-')[2]);
+            var g=parseInt(d.split('-')[2]);
 
-        if(gg!=g) 
-            continue; 
-        
-        risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
-        if(isdirect=="true")
-            risultato+="volo diretto <br>";
-        var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
-        for(j=0;j<compagnie.length;j++){
-            if(compagnie[j].CarrierId == carrierid){
-                risultato+="Compagnia: "+compagnie[j].Name+"<br>";
-                j=compagnie.length;
+            if(gg!=g) 
+                continue; 
+            
+            risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
+            if(isdirect=="true")
+                risultato+="volo diretto <br>";
+            var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
+            for(j=0;j<compagnie.length;j++){
+                if(compagnie[j].CarrierId == carrierid){
+                    risultato+="Compagnia: "+compagnie[j].Name+"<br>";
+                    j=compagnie.length;
+                }
             }
+            var originid=quotes[i].OutboundLeg.OriginId;
+            var destid=quotes[i].OutboundLeg.DestinationId;
+            var orig;
+            var dest;
+            for(j=0;j<places.length;j++){
+                if(places[j].PlaceId == originid)
+                    orig=places[j].Name;
+                else if(places[j].PlaceId == destid)
+                    dest=places[j].Name;
+            }
+            risultato+="Aeroporto di Partenza: "+orig+"<br> Aeroporto di Arrivo: "+dest+"<hr>";
         }
-        var originid=quotes[i].OutboundLeg.OriginId;
-        var destid=quotes[i].OutboundLeg.DestinationId;
-        var orig;
-        var dest;
-        for(j=0;j<places.length;j++){
-            if(places[j].PlaceId == originid)
-                orig=places[j].Name;
-            else if(places[j].PlaceId == destid)
-                dest=places[j].Name;
-        }
-        risultato+="Aeroporto di Partenza: "+orig+"<br> Aeroporto di Arrivo: "+dest+"<hr>";
+        return risultato+"<br><br>";
     }
-    return risultato+"<br><br>";
 };
 
 app.get('/logout', function(req, res){
