@@ -63,21 +63,23 @@ function scaricafoto(utente)
             var citta=photo.place.location.city;
             if(citta==undefined || citta==utente.hometown)
                 continue;
-            
-            var data=photo.created_time+"_"+i;
-
-            var newdir = dir+'/'+citta;
-            if(!fs.existsSync(newdir))
+            else
             {
-                viaggi+=citta+"-";
-                fs.mkdirSync(newdir);
-            }
+                var data=photo.created_time+"_"+i;
 
-            var path = newdir+'/'+data+'.jpg';
-    
-            download(url,path, () => {
-                console.log("Done!");
-            });
+                var newdir = dir+'/'+citta;
+                if(!fs.existsSync(newdir))
+                {
+                    viaggi+=citta+"-";
+                    fs.mkdirSync(newdir);
+                }
+
+                var path = newdir+'/'+data+'.jpg';
+        
+                download(url,path, () => {
+                    console.log("Done!");
+                });
+            }
         }
     }
 

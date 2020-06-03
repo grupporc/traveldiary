@@ -19,7 +19,7 @@ async function controllaEvento(a_t, req, res, citta, data)
         
         var info = JSON.parse(body);
         var lista=info.items;
-          
+
         if(lista!=null)
         {
             for(var i=0; i<lista.length; i++)
@@ -27,7 +27,7 @@ async function controllaEvento(a_t, req, res, citta, data)
                 if(lista[i].start == undefined) 
                     continue;
                 else 
-                    lista2.push(lista[i].start.date)
+                    lista2.push(lista[i].start.date);
             }
 
             if(lista2.includes(data))

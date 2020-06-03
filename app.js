@@ -212,7 +212,7 @@ app.get('/diario', function(req,res){
                 req.session.id_client=id_client;
 
                 var hometown;
-                if(info.hometowhn!=undefined)
+                if(info.hometown!=undefined)
                     hometown=info.hometown.name;
                 else
                     hometown="";
@@ -222,7 +222,7 @@ app.get('/diario', function(req,res){
                 console.log(hometown);
 
                 request({
-                    url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+                    url: "https://graph.facebook.com/me/photos?limit=300&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
                     method: 'GET',
                 }, function(error, response, body){
                     if(error)
