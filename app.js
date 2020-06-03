@@ -4,11 +4,11 @@ var request = require('request');
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require("body-parser");
-var fs=require("fs");
+var fs = require('fs');
 
 var rpc=require('./rpc_client');
 var eventi = require('./eventi');
-var foto= require('./foto');
+var foto = require('./foto');
 
 var app = express();
 
@@ -56,6 +56,7 @@ app.get("/loginFB", function(req, res){
     {
         if(req.session.GGtoken!=null)
             res.redirect('/home');
+        
         res.render('login.ejs',{accessoFb: "Accesso Effettuato",accessoGG: "Entra con Google", errore:""});
     }
 });
@@ -67,6 +68,7 @@ app.get("/loginGG", function(req, res){
     {
         if(req.session.FBtoken!=null)
             res.redirect('/home');
+
         res.render('login.ejs',{accessoFb: "Entra con Facebook",accessoGG: "Accesso Effettuato", errore:""});
     }
 });
@@ -79,9 +81,10 @@ app.get("/token", function(req, res){
             url: "https://graph.facebook.com/v7.0/oauth/access_token?client_id="+FBappId+"&redirect_uri=http://localhost:8888/token&client_secret="+FBsecretKey+"&code="+req.query.code, //URL to hit
             method: 'GET',
         }, function(error, response, body){
-            if(error) {
+            if(error) 
                 console.log("ERRORE: Fallita la richiesta del token facebook: "+errore);
-            } else {
+            else 
+            {
                 req.session.FBtoken = JSON.parse(body).access_token;
                 console.log("Ottenuto il token per il cliente\n");
 
@@ -95,17 +98,19 @@ app.get("/token", function(req, res){
                     else 
                     {
                         var data = JSON.parse(body).data;
-                        console.log(data);
+                        
                         var count=0;
-                        if(data!=undefined){
-                            for(i=0;i<data.length;i++){
-                                if(data[i].status!="declined"){
+                        if(data!=undefined)
+                        {
+                            for(i=0;i<data.length;i++)
+                            {
+                                if(data[i].status!="declined")
                                     count++;
-                                } 
                             }
                         }
-                        console.log(count);
-                        if(data!=undefined && count<4){
+                        
+                        if(data!=undefined && count<4)
+                        {
                             console.log('Per accedere al servizio è necessario autorizzare tutti i permessi richiesti!');
                             req.session.FBtoken=null;
                             if(req.session.GGtoken==null)
@@ -113,7 +118,8 @@ app.get("/token", function(req, res){
                             else
                                 res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                         }
-                        else{
+                        else
+                        {
                             console.log("Permessi garantiti");
                             if(req.session.GGtoken!=null)
                                 res.redirect('/home');
@@ -138,19 +144,21 @@ app.get("/token", function(req, res){
 
 app.get("/tokenGG", function(req, res){
     //andato a buon fine
-    if (req.query.code){
+    if (req.query.code)
+    {
         var autcode=req.query.code;
-        console.log(autcode);
         request({
             url: "https://oauth2.googleapis.com/token?client_id="+GGappId+"&client_secret="+GGsecretKey+"&code="+autcode+"&redirect_uri=http://localhost:8888/tokenGG&grant_type=authorization_code",
             method: 'POST',
         },function(error, response, body){
-            if(error) {
+            if(error)
+            {
                 console.log("ERRORE: Fallita la richiesta del token google: "+errore);
             }
-            else{
+            else
+            {
                 var info=JSON.parse(body);
-                console.log(info);
+                
                 if(info.scope.length<2)
                 {
                     //non ha garantito tutti i permessi
@@ -161,7 +169,8 @@ app.get("/tokenGG", function(req, res){
                     else
                         res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                 }
-                else{
+                else
+                {
                     req.session.GGtoken = info.access_token;
                     console.log("Permessi garantiti");
                     if(req.session.FBtoken!=null)
@@ -172,7 +181,8 @@ app.get("/tokenGG", function(req, res){
             }
         });            
     }
-    else{
+    else
+    {
         req.session.GGtoken=null;
         console.log("Annullato o Errore\n");
         if(req.session.FBtoken==null)
@@ -183,35 +193,44 @@ app.get("/tokenGG", function(req, res){
 });
 
 app.get('/diario', function(req,res){
-    //se avevo già caricato il diario
-    if(req.session.caricato==true) res.send("Success");
-    else{
+    if(req.session.caricato==true)
+        res.send("Success!");
+    else
+    {
         request({
             url: "https://graph.facebook.com/me?fields=id,hometown&access_token="+req.session.FBtoken,
             method: 'GET',
         }, function(error,response,body){
-            if(error){
+            if(error)
                 console.log(error);
-            } else{
+
+            else
+            {
                 var info=JSON.parse(body);
                 var id_client=info.id;
+
                 req.session.id_client=id_client;
+
                 var hometown;
                 if(info.hometowhn!=undefined)
                     hometown=info.hometown.name;
                 else
                     hometown="";
+                
                 console.log("Ottenuti dati utente!");
                 console.log(id_client);
                 console.log(hometown);
 
                 request({
-                url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
-                method: 'GET',
+                    url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+                    method: 'GET',
                 }, function(error, response, body){
-                    if(error) {
+                    if(error)
+                    {
                         console.log(error);
-                    } else {
+                    } 
+                    else 
+                    {
                         var data=JSON.parse(body).data;
                         console.log("Ottenute foto utente!");
                         
@@ -222,88 +241,96 @@ app.get('/diario', function(req,res){
                             hometown: hometown,
                             photos: data,
                         }
-                        rpc.creaDiario(utente).then(
+                        rpc.creaDiaro(utente).then(
                             function(resp){
-                                console.log("Funzione eseguita con Successo!");
-                                //mi ritorna i viaggi come stringa separata da -
-                                var arrviaggi = resp.split('-');
-                                //se vuoto non aggiorno il database
-                                if(arrviaggi[0]!=""){
-                                    //carico sul database 
-                                    if(req.session.rev==null){
+                                console.log("Funzione eseguita con: ");
+                                var arr_viaggi = resp.split('-');
+                                
+                                if(arr_viaggi[0]!="")
+                                {
+                                    if(req.session.rev==null)
+                                    {
                                         //vedo se il mio documento è presente nel db
                                         request({
-                                            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
-                                            methond: 'GET',
-                                            json: true
-                                        }, function(error,response,body){
-                                            if(error){
-                                                if(response.statusCode==404){
+                                            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            method: 'GET',
+                                            json: true,
+                                        }, function(error, response, body){
+                                            if(error)
+                                            {
+                                                if(response.statusCode==404)
+                                                {
                                                     //doc non esistente --> lo creo
-                                                    console.log(req.session.id_client);
                                                     request({
-                                                        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                        url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                                         method: 'PUT',
-                                                        body: {viaggi: arrviaggi},
+                                                        body: { viaggi: arr_viaggi },
                                                         json: true,
                                                     },function(error,response,body){
-                                                        if(error){
-                                                            console.log(error);
-                                                        } else{
-                                                            req.session.rev=body.rev;
-                                                            console.log("Aggiunto al database");
+                                                        if(error)
+                                                            console.log(error); 
+                                                        else
+                                                        {
+                                                            req.session.rev=info._rev;
+                                                            console.log("Aggiunto a database");
+                                                            
                                                             req.session.caricato=true;
-                                                            res.send("Success");
+                                                            res.send("Success!");
                                                         }
                                                     });
                                                 }
-                                            } 
-                                            else{
+                                            }
+                                            else
+                                            {
                                                 req.session.rev=body._rev;
-                                                console.log("doc esistente");
-                                                //aggiorno il doc esistente
+
+                                                //doc esistente --> lo modifico
                                                 request({
-                                                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                    url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                                     method: 'PUT',
-                                                    body: {_rev:req.session.rev, viaggi: arrviaggi},
+                                                    body: { _rev: req.session.rev, viaggi: arr_viaggi},
                                                     json: true,
                                                 },function(error,response,body){
-                                                    if(error){
+                                                    if(error)
                                                         console.log(error);
-                                                    } else{
-                                                        //var info=JSON.parse(body);
-                                                        req.session.rev=body.rev;
+                                                    else
+                                                    {
+                                                        req.session.rev=info._rev;
                                                         console.log("Aggiornato database");
+                        
                                                         req.session.caricato=true;
-                                                        res.send("Success");
+                                                        res.send("Success!");
                                                     }
-                                                }); 
+                                                });
                                             }
                                         });
                                     }
-                                    else{
+                                    else
+                                    {
                                         request({
-                                            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                             method: 'PUT',
-                                            body: {_rev:req.session.rev, viaggi: arrviaggi},
+                                            body: { _rev: req.session.rev, viaggi: arr_viaggi},
                                             json: true,
                                         },function(error,response,body){
-                                            if(error){
+                                            if(error)
                                                 console.log(error);
-                                            } else{
-                                                //var info=JSON.parse(body);
-                                                req.session.rev=body.rev;
+                                            else
+                                            {
+                                                req.session.rev=info._rev;
                                                 console.log("Aggiornato database");
+
                                                 req.session.caricato=true;
-                                                res.send("Success");
+                                                res.send("Success!");
                                             }
                                         });
                                     }
                                 }
-                                else{
-                                    req.session.caricato=true;
-                                    res.send("Success");
+                                else
+                                {
+                                    res.send("Success!");
                                 }
+
                             }).catch(
                             function(err){
                                 console.log("Si è verificato un errore nella creazione del diario!");
@@ -314,50 +341,114 @@ app.get('/diario', function(req,res){
                     }
                 })
             }
-        })
+        });
     }
 });
-
 
 app.get('/home',function(req,res){
     res.render('home.ejs');
 });
 
+app.get('/listaViaggi',function(req,res){
+    //get da couch db
+    request({
+        url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+        method: 'GET',
+    },function(error,response,body){
+        if(error)
+            console.log(error);
+        else
+        {
+            var info=JSON.parse(body);
+            var map = parseMap(12.496366, 41.902782);
+            var viaggi = info.viaggi;
+            var lista = info.viaggi.slice();
+            
+            for(var i=0; i<viaggi.length; i++)
+            {
+                var viaggio=viaggi[i];
+                if(viaggio!="")
+                {
+                    console.log(viaggio);
+                    var opt = {
+                        url: 'http://api.openweathermap.org/data/2.5/weather?q='+viaggio+'&appid='+process.env.METEO_KEY,
+                        method: 'GET',
+                    };
+                    request(opt, function(error, response, body){
+                        lista.pop();
+                        if(response.statusCode==200)
+                        {
+                            var resp = JSON.parse(body);
+                            map=map+`var marker = new mapboxgl.Marker()
+                                .setLngLat([`+resp.coord.lon+`,`+resp.coord.lat+`])
+                                .setPopup(new mapboxgl.Popup().setHTML("<b>`+resp.name+`</b>"))
+                                .addTo(map);`
+                        }
+
+                        if(lista.length==1)
+                        {
+                            map=map+"</script>";
+                            res.render('viaggi.ejs', {count: info.viaggi.length, viaggi: info.viaggi, mappa: map});
+                        }
+                    });
+                }
+            }
+        }
+    });
+});
+
+function parseMap(long, lat)
+{
+    return `<script>
+        mapboxgl.accessToken = '`+process.env.MAP_KEY+`';
+        var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [`+long+`, `+ lat+`],
+        zoom: 1});
+    `;
+};
+
 app.get('/paginaDiario',function(req,res){
-    //prova foto
-    foto.caricaFoto(req.session.GGtoken,req,res);
-    //
     var files = fs.readdirSync("fbimages/"+req.session.id_client);
     var num_dir = files.length;
-    for(var i=0; i<num_dir; i++){
+    for(var i=0; i<num_dir; i++)
+    {
         var locations = files[i];
         if(locations == '.DS_Store') continue;
-        console.log("locations: "+locations);
 
-        photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
+        var photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
                 
         var num_photo = photos.length;
-        for(var j=0; j<num_photo; j++){
-            if(photos[j]=='.DS_Store') continue;
-            var data= photos[j].split('T')[0];
-            console.log("data "+data);
-            eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
+            
+        for(var j=0; j<num_photo; j++)
+        {
+            if(photos[j]=='.DS_Store') 
+                continue;
+            else
+            {
+                var data= photos[j].split('T')[0];
+                eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
+            }
         }
     }
+
     var options={
         url:'https://www.googleapis.com/calendar/v3/calendars/primary',
         method: 'GET',
-        headers: {
-            'Authorization': 'Bearer '+req.session.GGtoken,
-        }
+	    headers: {
+	        'Authorization': 'Bearer '+req.session.GGtoken,
+        }  
     };
+    
     request(options, function(error, response, body){
-        if(error){
+        if(error)
             console.log(error);
-        }
-        else{
-            var id_calendar=JSON.parse(body).id;
-            res.render('diario.ejs',{idCal: id_calendar});
+        else
+        {
+            var id_calendar = JSON.parse(body).id;
+            foto.caricaFoto(req.session.GGtoken, req, res);
+            res.render('diario.ejs', {idCal : id_calendar});
         }
     });
 });
@@ -379,10 +470,11 @@ app.post('/cercaViaggio',function(req,res){
     }, function(error,response,body){
         if(error)
             console.log(error);
-        else{
+        else
+        {
             var info=JSON.parse(body);
-            if(info.Places[0]==undefined) 
-                res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>"});
+            if(info.Places[0]==undefined)
+                res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>'})
             var aerP=info.Places[0].PlaceId;
             console.log(aerP);
 
@@ -398,10 +490,11 @@ app.post('/cercaViaggio',function(req,res){
             }, function(error,response,body){
                 if(error)
                     console.log(error);
-                else{
+                else
+                {
                     var info=JSON.parse(body);
-                    if(info.Places[0]==undefined) 
-                        res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>"});
+                    if(info.Places[0]==undefined)
+                        res.render('voli.ejs', {voli: '<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>'})
                     var aerA=info.Places[0].PlaceId;
                     console.log(aerA);
                     //cerco voli
@@ -416,9 +509,10 @@ app.post('/cercaViaggio',function(req,res){
                     }, function(error,response,body){
                         if(error)
                             console.log(error);
-                        else{
+                        else
+                        {
                             var info=JSON.parse(body);
-                            res.render('voli.ejs',{voli: parseHTML(info,data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
+                            res.render('voli.ejs',{voli: parseHTML(info, data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
                         }
                     });
                 }
@@ -439,10 +533,12 @@ app.get('/voloCalendario',function(req,res){
     } 
 });
 
-function parseHTML(json,d) {
-    if(json==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
+function parseHTML(json, d) {
+    if(json==undefined) 
+        return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
     var quotes=json.Quotes;
-    if(quotes==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
+    if(quotes==undefined)
+        return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><br><br>";
     var places=json.Places;
     var compagnie=json.Carriers;
     var risultato="<h1> Voli trovati: </h1>";
@@ -460,8 +556,10 @@ function parseHTML(json,d) {
         var y=parseInt(date[0]);
 
         var g=parseInt(d.split('-')[2]);
-        if(g != gg) continue;
 
+        if(gg!=g) 
+            continue; 
+        
         risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
         if(isdirect=="true")
             risultato+="volo diretto <br>";
@@ -486,21 +584,6 @@ function parseHTML(json,d) {
     }
     return risultato+"<br><br>";
 };
-
-app.get('/listaViaggi',function(req,res){
-    //get da couch db
-    request({
-        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
-        method: 'GET',
-    },function(error,response,body){
-        if(error){
-            console.log(error);
-        } else{
-            var info=JSON.parse(body);
-            res.render('mieiviaggi.ejs',{count: info.viaggi.length, viaggi: info.viaggi});
-        }
-    });
-});
 
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);

@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Voli</title>
+        <title>Login</title>
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
         <style>
             body {
                 background-image: url('img/sfondo.gif');
@@ -31,25 +33,27 @@
             button {
                 outline: none;
             }
-            button:hover {
-                color:gray;
+            #map { 
+                width: 50%; 
+                height: 380px;
+                position: absolute;
+                left: 25%;
             }
         </style>
     </head>
     <body>
         <div class="w3-center" style="width: 100%;">
             <i class="fa fa-home fa-3x" onclick="window.history.go(-1);"></i>
+            <div style="width: 60%; margin-left: 20%;"> 
+                <h1>I miei viaggi: </h1>
+                <% for(var i=0 ; i < count ; i++) {
+                    if(viaggi[i]!='')  %>
+                        <%= viaggi[i]; %> <br>
+                <% } %>
+            </div>
             <br>
-            <div style="width: 60%; margin-left: 20%;"> <%- voli %> </div>
-            <br>
-            <button id="calendario" class="w3-btn w3-teal w3-round-xlarge w3-padding-large"> <%= button %> </button>
+            <div id="map"></div>
         </div>
     </body>
-    <script>
-        (function() {
-        document.getElementById('calendario').addEventListener('click', function() {
-            window.location = 'http://localhost:8888/voloCalendario?data=<%= data %>&luogo=<%= luogo %>';
-        }, false);
-        })();
-    </script>
+    <%- mappa %>
 </html>
