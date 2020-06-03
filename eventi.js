@@ -1,6 +1,6 @@
 var request = require('request');
 
-function controllaEvento(a_t, req, res, citta, data)
+async function controllaEvento(a_t, req, res, citta, data)
 {
     if(citta=='.DS_Store')
         return;

@@ -410,26 +410,38 @@ function parseMap(long, lat)
 };
 
 app.get('/paginaDiario',function(req,res){
-    var files = fs.readdirSync("fbimages/"+req.session.id_client);
-    var num_dir = files.length;
-    for(var i=0; i<num_dir; i++)
-    {
-        var locations = files[i];
-        if(locations == '.DS_Store') continue;
 
-        var photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
-                
-        var num_photo = photos.length;
-            
-        for(var j=0; j<num_photo; j++)
+    if(req.session.caricateFoto!=true)
+    {
+        foto.caricaFoto(req.session.GGtoken, req, res);
+
+        var files = fs.readdirSync("fbimages/"+req.session.id_client);
+        var num_dir = files.length;
+        for(var i=0; i<num_dir; i++)
         {
-            if(photos[j]=='.DS_Store') 
-                continue;
-            else
+            var locations = files[i];
+            if(locations == '.DS_Store') continue;
+
+            var photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
+                    
+            var num_photo = photos.length;
+
+            async function process()
             {
-                var data= photos[j].split('T')[0];
-                eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
+                for (var i=0; i<num_photo; i++)
+                {
+                    var photo=photos[i];
+                    if(photo=='.DS_Store')
+                        continue;
+                    else
+                    {
+                        var data = photo.split('T')[0];
+                        await eventi.controllaEvento(req.session.GGtoken, req, res, locations, data);
+                    }
+                }
             }
+
+            process();
         }
     }
 
@@ -447,7 +459,7 @@ app.get('/paginaDiario',function(req,res){
         else
         {
             var id_calendar = JSON.parse(body).id;
-            foto.caricaFoto(req.session.GGtoken, req, res);
+            req.session.caricateFoto = true;
             res.render('diario.ejs', {idCal : id_calendar});
         }
     });
@@ -584,6 +596,22 @@ function parseHTML(json, d) {
     }
     return risultato+"<br><br>";
 };
+
+app.get('/logout', function(req, res){
+    fs.rmdirSync('fbimages/'+req.session.id_client, {
+        recursive: true,
+    });
+    console.log("Cartella client: "+req.session.id_client+" rimossa");
+
+    req.session.FBtoken=null;
+    req.session.GGtoken=null;
+    req.session.id_client=null;
+    req.session.caricato=false;
+    req.session.caricateFoto=false;
+    req.session.rev=null;
+
+    res.render('login.ejs', {accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:""});
+});
 
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);

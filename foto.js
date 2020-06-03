@@ -187,18 +187,23 @@ function caricaFoto(token, req, res)
             var photos=fs.readdirSync("fbimages/"+req.session.id_client+"/"+title);
             var num_photo = photos.length;
             
-            for(var j=0; j<num_photo; j++)
+            async function process()
             {
-                var photo = photos[j];
-                if(photo == ".DS_Store") continue;
-                
-                creaFoto(token, req, res, photo, id_album, title)
-                .then(function(resp){
-                    console.log(resp);
-                }).catch(function(error){
-                    console.log(error);
-                });
+                for(var j=0; j<num_photo; j++)
+                {
+                    var photo = photos[j];
+                    if(photo == ".DS_Store") continue;
+                    
+                    await creaFoto(token, req, res, photo, id_album, title)
+                    .then(function(resp){
+                        console.log(resp);
+                    }).catch(function(error){
+                        console.log(error);
+                    });
+                }
             }
+
+            process();
         }).catch(function(err){
             console.log("Si è verificato un errore nella creazione del diario!");
             console.log(err);

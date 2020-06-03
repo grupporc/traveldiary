@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 var amqp = require('amqplib/callback_api');
 
@@ -48,13 +47,12 @@ function creaDiario(utente){
             });
         });   
     });
-
 }
 
 function generateUuid() {
     return Math.random().toString() +
-        Math.random().toString() +
-        Math.random().toString();
+           Math.random().toString() +
+           Math.random().toString();
 }
-  
-module.exports.creaDiario = creaDiario;
+
+module.exports.creaDiaro = creaDiario;
