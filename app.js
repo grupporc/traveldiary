@@ -12,6 +12,9 @@ var foto = require('./foto');
 
 var app = express();
 
+//per visualizzare le immagini
+app.use('/', express.static(__dirname));
+
 app.set('view engine','ejs');
 
 //gestione della sessione 
@@ -222,7 +225,7 @@ app.get('/diario', function(req,res){
                 console.log(hometown);
 
                 request({
-                    url: "https://graph.facebook.com/me/photos?limit=300&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+                    url: "https://graph.facebook.com/me/photos?limit=100&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
                     method: 'GET',
                 }, function(error, response, body){
                     if(error)
@@ -252,7 +255,7 @@ app.get('/diario', function(req,res){
                                     {
                                         //vedo se il mio documento è presente nel db
                                         request({
-                                            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            url: "http://admin:admin@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                             method: 'GET',
                                             json: true,
                                         }, function(error, response, body){
@@ -262,7 +265,7 @@ app.get('/diario', function(req,res){
                                                 {
                                                     //doc non esistente --> lo creo
                                                     request({
-                                                        url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                        url: "http://admin:admin@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                                         method: 'PUT',
                                                         body: { viaggi: arr_viaggi },
                                                         json: true,
@@ -286,7 +289,7 @@ app.get('/diario', function(req,res){
 
                                                 //doc esistente --> lo modifico
                                                 request({
-                                                    url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                                    url: "http://admin:admin@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                                     method: 'PUT',
                                                     body: { _rev: req.session.rev, viaggi: arr_viaggi},
                                                     json: true,
@@ -308,7 +311,7 @@ app.get('/diario', function(req,res){
                                     else
                                     {
                                         request({
-                                            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                                            url: "http://admin:admin@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                                             method: 'PUT',
                                             body: { _rev: req.session.rev, viaggi: arr_viaggi},
                                             json: true,
@@ -352,7 +355,7 @@ app.get('/home',function(req,res){
 app.get('/listaViaggi',function(req,res){
     //get da couch db
     request({
-        url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+        url: "http://admin:admin@127.0.0.1:5984/travel_diary/"+req.session.id_client,
         method: 'GET',
     },function(error,response,body){
         if(error)
@@ -423,9 +426,8 @@ app.get('/paginaDiario',function(req,res){
             if(locations == '.DS_Store') continue;
 
             var photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
-                    
+            
             var num_photo = photos.length;
-
             async function process()
             {
                 for (var i=0; i<num_photo; i++)
@@ -460,7 +462,49 @@ app.get('/paginaDiario',function(req,res){
         {
             var id_calendar = JSON.parse(body).id;
             req.session.caricateFoto = true;
-            res.render('diario.ejs', {idCal : id_calendar});
+            var nomi_album = fs.readdirSync("fbimages/"+req.session.id_client);
+
+            var files = fs.readdirSync("fbimages/"+req.session.id_client);
+        
+            var num_dir = files.length;
+            var num_photo_totali = 0;
+
+            //array dove metterò tutte le foto
+            var array_photo = new Array();
+
+            //array che contiene location di tutte le foto
+            var loc = new Array();
+
+            for(var i=0; i<num_dir; i++)
+            {
+                var locations = files[i];
+                if(locations == '.DS_Store') continue;
+
+                var photos = fs.readdirSync("fbimages/"+req.session.id_client+"/"+locations);
+                
+                var num_photo = photos.length;
+                num_photo_totali += parseInt(num_photo);
+
+                async function process()
+                {
+                    for (var i=0; i<num_photo; i++)
+                    {
+                        var photo=photos[i];
+                        if(photo=='.DS_Store')
+                            continue;
+                        else
+                        {
+                            var srt = "fbimages/"+req.session.id_client+"/"+locations+"/"+photos[i];
+                            array_photo.push(srt);
+                            loc.push(locations);
+                        }
+                    }
+                }
+                process();
+            }
+            
+            
+            res.render('diario.ejs', {idCal : id_calendar, num_photo_totali : num_photo_totali, array_photo : array_photo, loc : loc});
         }
     });
 });
@@ -633,11 +677,6 @@ app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);
 });
 
-//Per visualizzare le immagini
-app.get("/img/Logo.png", function(req, res){
-    res.sendFile("img/Logo.png", {"root" : __dirname});
-});
 
-app.get("/img/sfondo.gif", function(req, res){
-    res.sendFile("img/sfondo.gif", {"root" : __dirname});
-});
+
+
