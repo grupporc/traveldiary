@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Viaggi</title>
+        <title>Attrazioni</title>
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
-        <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
         <style>
             body {
                 background-image: url('img/sfondo.gif');
@@ -16,11 +14,7 @@
                 margin-top:2%;
                 overflow: scroll;
             }
-            hr{
-                border-color:rgb(125, 197, 173);
-                border-width: 2px;
-            }
-            h1{
+            h2{
                 color: rgb(109, 155, 140);
                 font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             }
@@ -33,11 +27,8 @@
             button{
                 outline: none;
             }
-            #map { 
-                width: 50%; 
-                height: 380px;
-                position: absolute;
-                left: 25%;
+            button:hover{
+                color:gray;
             }
         </style>
     </head>
@@ -45,16 +36,9 @@
         <div class="w3-center" style="width: 100%;">
             <i class="fa fa-home fa-3x" onclick="window.history.go(-1);"></i>
             <div style="width: 60%; margin-left: 20%;"> 
-                <h1> I miei viaggi: </h1>
-                <% for(var i=0; i < count; i++){
-                    if(viaggi[i]!='') %>
-                        <%= viaggi[i]; %> <br>
-                <% } viaggi %> 
+                <h2> Attrazioni suggerite: </h2>
+                <%- attrazioni %>
             </div>
-            <br>
-            <div id="map"></div>
-            <br><br>
         </div>
     </body>
-    <%- mappa %>
 </html>
