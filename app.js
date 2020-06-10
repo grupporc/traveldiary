@@ -390,7 +390,7 @@ app.get('/paginaDiario',function(req,res){
                 var num_photo = photos.length;
                 num_photo_totali += parseInt(num_photo);
 
-                function process()
+                async function process()
                 {
                     for (var i=0; i<num_photo; i++)
                     {
