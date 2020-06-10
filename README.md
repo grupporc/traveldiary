@@ -1,10 +1,10 @@
 ### TRAVEL DIARY: progetto per il corso di Reti di calcolatori 2019-2020
 
-Realizzato da:
-Bianchini Silvia 1796898,
-Davidde Francesca 1792368,
-Ferrazzi Valentina 1756819,
-Evangelisti Martina 1796480
+Realizzato da:  
+Bianchini Silvia 1796898,  
+Davidde Francesca 1792368,  
+Ferrazzi Valentina 1756819,  
+Evangelisti Martina 1796480  
 
 ### Requisiti:
 1. Il servizio REST che implementate (lo chiameremo SERV) deve offrire all'esterno delle API documentate con swagger per esempio
@@ -44,7 +44,7 @@ Per eseguire il logout e cancellare la cartella di appoggio creata per la gestio
 ### SetUp iniziale
 Per poter utilizzare l’applicazione è necessario avviare su Docker RabbitMQ e CoachDB.  
    
-I moduli necessari per l’applicazione sono:
+I moduli necessari per l’applicazione sono:   
 $ npm install express  
 $ npm install request  
 $ npm install body-parser  
