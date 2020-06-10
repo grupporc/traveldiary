@@ -45,11 +45,11 @@ Per eseguire il logout e cancellare la cartella di appoggio creata per la gestio
 Per poter utilizzare l’applicazione è necessario avviare su Docker RabbitMQ e CoachDB.
 
 I moduli necessari per l’applicazione sono:
->> npm install express
->> npm install request
->> npm install body-parser
->> npm install cookie-parser
->> npm install express-session
->> npm install fs
->> npm install dotenv
+npm install express
+npm install request
+npm install body-parser
+npm install cookie-parser
+npm install express-session
+npm install fs
+npm install dotenv
 
