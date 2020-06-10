@@ -5,7 +5,7 @@ async function controllaEvento(a_t,req,res, citta, data){
 
     var lista2=new Array();
 	var options={
-	url:'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+	url:'https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=9999&singleEvents=true',
 	headers: {
 	    'Authorization': 'Bearer '+a_t,
 	    }
@@ -37,7 +37,7 @@ function aggiungiEvento(a_t,req,res,citta,data){
         'Content-Type': 'application/json'
     };
     var body1={
-        'descrition' : 'Vacanza a '+citta,
+        'description' : 'Vacanza a '+citta,
         'summary' : citta,
         'location': citta,
         'end': {
