@@ -25,7 +25,7 @@ REST 6: OpenWeather (per ottenere latitudine e longitudine da passare ai marker 
 REST 7: SkyScanner (per informazioni sui biglietti aerei)  
 REST 8: Google Place (per informazioni sulle attrazioni)  
 AMQP: RabbitMQ   
-Database: CoachDB  
+Database: CouchDB  
 
 ### Breve descrizione
 Travel Diary è un’applicazione web che permette all’utente di ottenere e mantenere aggiornato un proprio diario di viaggio, nonché ricevere informazioni in tempo reale sui voli aerei e suggerimenti su attrazioni da visitare in un dato luogo di interesse.  
