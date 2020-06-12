@@ -25,7 +25,7 @@ function updateDB(req, arrviaggi){
                             req.session.rev=body.rev;
                             console.log("Aggiunto al database");
                             req.session.caricato=true;
-                            res.send("Success");
+                            return "Success";
                         }
                     });
                 }
@@ -46,7 +46,7 @@ function updateDB(req, arrviaggi){
                         req.session.rev=body.rev;
                         console.log("Aggiornato database");
                         req.session.caricato=true;
-                        res.send("Success");
+                        return "Success";
                     }
                 }); 
             }
@@ -65,7 +65,7 @@ function updateDB(req, arrviaggi){
                 req.session.rev=body.rev;
                 console.log("Aggiornato database");
                 req.session.caricato=true;
-                res.send("Success");
+                return "Success";
             }
         });
     }
