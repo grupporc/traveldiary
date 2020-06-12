@@ -444,9 +444,16 @@ app.post('/cercaViaggio',function(req,res){
                                 if(error)
                                     console.log(error);
                                 else{
-                                    var info=JSON.parse(body);
-                                    if(info==undefined || info.Quotes==undefined || info.Quotes.length==0){
-                                        res.render('voli.ejs',{voli: parseHTML(info,data), data: "", luogo: "", button: "Torna alla Home"});
+                                    var info=JSON.parse(body);var voloOK = false;
+
+                                    for ( var i = 0; i < info.Quotes.length; i++){
+                                        if (data == info.Quotes[i].OutboundLeg.DepartureDate.split('T')[0]){
+                                            voloOK = true;
+                                        }
+                                    }
+
+                                    if(info==undefined || info.Quotes==undefined || info.Quotes.length==0 || voloOK == false){
+                                        res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>", data: "", luogo: "", button: "Torna alla Home"});
                                     }
                                     else{
                                         res.render('voli.ejs',{voli: parseHTML(info,data), data: data, luogo: arrivo, button: "Aggiungi evento al calendario"});
@@ -475,53 +482,48 @@ app.get('/voloCalendario',function(req,res){
 });
 
 function parseHTML(json,d) {
-    if(json==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>";
     var quotes=json.Quotes;
-    if(quotes==undefined) return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>";
     var places=json.Places;
     var compagnie=json.Carriers;
     var risultato="<h1> Voli trovati: </h1>";
     var num=quotes.length;
-    if(num==0)
-        return "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>";
-    else{
-        for(var i=0; i<num; i++) 
-        {
-            var prezzo = quotes[i].MinPrice;
-            var isdirect= quotes[i].Direct;
-            var data=quotes[i].OutboundLeg.DepartureDate.split('T');
-            var date=data[0].split('-');
-            var gg=parseInt(date[2]);
-            var mm=parseInt(date[1]);
-            var y=parseInt(date[0]);
+    
+    for(var i=0; i<num; i++) 
+    {
+        var prezzo = quotes[i].MinPrice;
+        var isdirect= quotes[i].Direct;
+        var data=quotes[i].OutboundLeg.DepartureDate.split('T');
+        var date=data[0].split('-');
+        var gg=parseInt(date[2]);
+        var mm=parseInt(date[1]);
+        var y=parseInt(date[0]);
 
-            var g=parseInt(d.split('-')[2]);
-            if(g != gg) continue;
+        var g=parseInt(d.split('-')[2]);
+        if(g != gg) continue;
 
-            risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
-            if(isdirect=="true")
-                risultato+="volo diretto <br>";
-            var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
-            for(j=0;j<compagnie.length;j++){
-                if(compagnie[j].CarrierId == carrierid){
-                    risultato+="Compagnia: "+compagnie[j].Name+"<br>";
-                    j=compagnie.length;
-                }
+        risultato+="Prezzo: "+prezzo+" €<br> Data: "+gg+"/"+mm+"/"+y+"<br>";
+        if(isdirect=="true")
+            risultato+="volo diretto <br>";
+        var carrierid=quotes[i].OutboundLeg.CarrierIds[0];
+        for(j=0;j<compagnie.length;j++){
+            if(compagnie[j].CarrierId == carrierid){
+                risultato+="Compagnia: "+compagnie[j].Name+"<br>";
+                j=compagnie.length;
             }
-            var originid=quotes[i].OutboundLeg.OriginId;
-            var destid=quotes[i].OutboundLeg.DestinationId;
-            var orig;
-            var dest;
-            for(j=0;j<places.length;j++){
-                if(places[j].PlaceId == originid)
-                    orig=places[j].Name;
-                else if(places[j].PlaceId == destid)
-                    dest=places[j].Name;
-            }
-            risultato+="Aeroporto di Partenza: "+orig+"<br> Aeroporto di Arrivo: "+dest+"<hr>";
         }
-        return risultato+"<br><br>";
+        var originid=quotes[i].OutboundLeg.OriginId;
+        var destid=quotes[i].OutboundLeg.DestinationId;
+        var orig;
+        var dest;
+        for(j=0;j<places.length;j++){
+            if(places[j].PlaceId == originid)
+                orig=places[j].Name;
+            else if(places[j].PlaceId == destid)
+                dest=places[j].Name;
+        }
+        risultato+="Aeroporto di Partenza: "+orig+"<br> Aeroporto di Arrivo: "+dest+"<hr>";
     }
+    return risultato+"<br><br>";
 };
 
 app.get('/listaViaggi',function(req,res){
@@ -767,13 +769,4 @@ app.get("/travelapi/attrazioni/:citta", function(req,res){
 //server in ascolto sulla porta 8888
 app.listen(8888, function() {
     console.log("Server in ascolto sulla porta: %s", this.address().port);
-});
-
-//Per visualizzare le immagini
-app.get("/img/Logo.png", function(req, res){
-    res.sendFile("img/Logo.png", {"root" : __dirname});
-});
-
-app.get("/img/sfondo.gif", function(req, res){
-    res.sendFile("img/sfondo.gif", {"root" : __dirname});
 });

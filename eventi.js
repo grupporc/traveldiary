@@ -20,7 +20,7 @@ async function controllaEvento(a_t, citta, data){
             	lista2.push(lista[i].start.date);
         	}
 			if(lista2.includes(data)){
-		      	console.log("evento già aggiunto!!");
+		      	console.log("Evento già aggiunto!!");
 		    }
 		    else{
 		      	aggiungiEvento(a_t,citta, data);
