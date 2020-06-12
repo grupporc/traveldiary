@@ -1,49 +1,36 @@
 var request = require('request');
 
-async function controllaEvento(a_t, citta, data)
-{
-    if(citta=='.DS_Store')
-        return;
-    
+async function controllaEvento(a_t, citta, data){
+    if (citta=='.DS_Store') return;
+
     var lista2=new Array();
-	
 	var options={
-	    url:'https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=9999&singleEvents=true',
-	    headers: {
-	        'Authorization': 'Bearer '+a_t,
+	url:'https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=9999&singleEvents=true',
+	headers: {
+	    'Authorization': 'Bearer '+a_t,
 	    }
     };
     request(options, function(error, response, body){
-        if (error)
-            console.log(error);
-        
+    	if (!error && response.statusCode == 200){
         var info = JSON.parse(body);
-        var lista=info.items;
-
-        if(lista!=null)
-        {
-            for(var i=0; i<lista.length; i++)
-            {
-                if(lista[i].start == undefined) 
-                    continue;
-                else 
-                    lista2.push(lista[i].start.date);
-            }
-
-            if(lista2.includes(data))
-            {
+        var lista=info.items; 
+        if(lista!=null){
+            for(var i=0; i<lista.length; i++){
+                if(lista[i].start == undefined) continue;
+            	lista2.push(lista[i].start.date);
+        	}
+			if(lista2.includes(data)){
 		      	console.log("evento già aggiunto!!");
 		    }
-            else
-            {
-                aggiungiEvento(a_t, citta, data);
+		    else{
+		      	aggiungiEvento(a_t,citta, data);
 		    }
         }
+      }
     });
 }
 
-function aggiungiEvento(a_t,citta,data)
-{
+function aggiungiEvento(a_t,citta,data){
     var url= 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
     var headers= {
         'Authorization': 'Bearer '+a_t,
@@ -54,22 +41,14 @@ function aggiungiEvento(a_t,citta,data)
         'summary' : citta,
         'location': citta,
         'end': {
-            'date' : data,
+        'date' : data,
         },
         'start':{
-            'date': data,
+        'date': data,
         },
-        'visibility' : 'public',
+        'visibility': 'public'
     };
-    request({
-        headers:headers, 
-        url:url, 
-        method:'POST', 
-        body:JSON.stringify(body1)
-    }, function(error,response,body){
-        if(error)
-            console.log(error);
-
+    request({headers:headers, url:url, method:'POST', body:JSON.stringify(body1)}, function(error,response,body){
         console.log('Aggiunto evento '+citta);
     });
 }

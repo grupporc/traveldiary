@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Home</title>
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
@@ -14,56 +14,82 @@
                 background-repeat: no-repeat;
                 background-size: 100% 100%;
             }
-            button {
+            button{
                 outline: none;
             }
         </style>
     </head>
     <body onload="getDiario();">
-        <button id="logout" class="w3-btn w3-pale-red w3-padding w3-round-xlarge" style="margin-top: 20px; margin-left: 70%; outline: none;">
-            Logout
-        </button>
+        <button id="logout" class="w3-btn w3-pale-red w3-round-xlarge w3-padding" style="margin-top: 20px; margin-left: 70%; outline: none;">Log out</button>
         <div class="w3-display-middle w3-center">
             <h4 class="w3-text-teal" style="text-align: left; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">Scopri le attrazioni migliori:</h4>
-            <form name="formSearch" action="http://localhost:8888/attrazioni" method="POST">
+            <form name="formSearch" action="http://localhost:8888/attrazioni" method="post">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" placeholder="Inserisci la città" name="search" required>
                     <div class="input-group-append">
-                        <button class="btn btn-info" type="submit" style="outline: none;">
+                        <button class="btn btn-info" style="outline: none;" type="submit">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
                 </div> 
             </form>
             <br><br>
-            <h4 class="w3-text-teal" style="text-align: left; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">Cerca Viaggio:</h4>
-            <div class="w3-round-xlarge w3-pale-green w3-padding-large w3-border w3-border-teal">
-                <form name="form" action='http://localhost:8888/cercaViaggio' method='POST' onsubmit="return validaForm();">
-                    Città di partenza:
-                    <input type="text" name="partenza" placeholder="Inserisci città">
-                    <br><br>
-                    Città di arrivo:
-                    <input type="text" name="arrivo" placeholder="Inserisci città">
-                    <br><br>
-                    Data di partenza:
-                    <input type="date" name="data" placeholder="yyyy-mm-dd" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
-                    <br><br>
-                    <button type="submit" class="w3-button w3-round-xlarge w3-border w3-border-teal w3-white w3-hover-teal"  style="outline: none;"">Cerca</button>
+            <h4 class="w3-text-teal" style="text-align:left; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"> Cerca un viaggio </h4>
+            <div class="w3-border w3-border-teal w3-round-xlarge w3-padding-large w3-pale-green">
+                <form name="form" action="http://localhost:8888/cercaViaggio" method="post" onSubmit="validaform();">
+                    Citt&agrave; di partenza:
+                    <input type="text" name="partenza" placeholder="Inserisci partenza">
+                    <br>
+                    <br>
+                    Citt&agrave; di arrivo:
+                    <input type="text" name="arrivo" placeholder="Inserisci arrivo">
+                    <br>
+                    <br>
+                    Giorno:
+                    <input type="date" name="data" placeholder="yyyy-mm-dd">
+                    <br>
+                    <br>
+                    <button type="submit" class="w3-button w3-border-teal w3-border w3-white w3-hover-teal w3-round-large" style="outline: none;"> Cerca </button>
                 </form>
             </div>
-            <br><br>
-            <p id="messaggio">Caricamento diario in corso...</p>
-            <button id="diario" class="w3-btn w3-teal w3-padding-large w3-round-xlarge" style="opacity: 0.3; outline: none;">
-                Ottieni il tuo diario
-            </button>
+            <br>
+            <br>
+            <p id="res">Caricamento diario in corso...</p>
+            <button id="diario" class="w3-btn w3-teal w3-round-xlarge w3-padding-large" style="opacity:0.3; outline: none;">Ottieni il tuo diario</button>
         </div>
     </body>
     <script>
-        (function() {
-            document.getElementById('logout').addEventListener('click', function() {
-                window.location = 'http://localhost:8888/logout';
-            }, false);
-        })();
+        function getDiario(){
+            var req= new XMLHttpRequest();
+            req.onreadystatechange = gestisciResponse;
+            req.open('GET', "http://localhost:8888/diario", true);
+            req.send();
+        };
+        function gestisciResponse(e) {
+            if(e.target.readyState==4)
+            {
+                if(e.target.status== 200)
+                {
+                    var risp=e.target.responseText;
+                    if(risp=="errore")
+                    {
+                        document.getElementById("res").innerHTML="ERRORE: Impossibile caricare diario!"; 
+                    }
+                    else{
+                        document.getElementById("res").innerHTML="Il tuo diario è pronto!";   
+                        document.getElementById("diario").style.opacity="1"; 
+                        document.getElementById("diario").addEventListener('click',function(){
+                            window.location='http://localhost:8888/paginaDiario';
+                            //pagina dove visualizzeremo diario;
+                        },false);
+                    }
+                }
+                else
+                {
+                    document.getElementById("res").innerHTML="ERRORE: Impossibile caricare diario!"; 
+                }
+            }
+        };
         function validaForm()
         {
             var form = document.form;
@@ -99,41 +125,13 @@
                 alert("Questa non è una data accettabile!!");
                 return false;
             }
-            
+
             return true;
         };
-        function getDiario()
-        {
-            var req= new XMLHttpRequest();
-            req.onreadystatechange = gestisciResponse;
-            req.open('GET', 'http://localhost:8888/diario');
-            req.send();
-        };
-        function gestisciResponse(e) 
-        {
-            if(e.target.readyState==4)
-            {
-                if(e.target.status==200)
-                {
-                    var risp=e.target.responseText;
-                    if(risp=="errore")
-                    {
-                        document.getElementById("messaggio").innerHTML="ERRORE: Impossibile caricare diario!"; 
-                    }
-                    else
-                    {
-                        document.getElementById("messaggio").innerHTML="Il tuo diario è pronto!!";   
-                        document.getElementById("diario").style.opacity=1;
-                        document.getElementById('diario').addEventListener('click', function() {
-                            window.location = 'http://localhost:8888/paginaDiario';
-                        }, false);
-                    }
-                }
-                else
-                {
-                    document.getElementById("messaggio").innerHTML="Errore: Impossibile caricare diario!";
-                }
-            }
-        };
+        (function() {
+        document.getElementById('logout').addEventListener('click', function() {
+            window.location = 'http://localhost:8888/logout';
+        }, false);
+        })();
     </script>
 </html>

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-var fs=require('fs');
-var request=require("request");
+
 var amqp = require('amqplib/callback_api');
 
 amqp.connect('amqp://localhost', function(error0, connection) {
@@ -36,12 +35,14 @@ amqp.connect('amqp://localhost', function(error0, connection) {
     });
 });
 
-function scaricafoto(utente)
-{   
-    var dir = './fbimages/'+utente.id;
-    
-    if(!fs.existsSync(dir))
-    {
+function scaricafoto(utente){
+    var fs=require('fs');
+    var request=require("request");
+
+    var IDutente=utente.id;
+    var dir='./fbimages/'+IDutente;
+
+    if(!fs.existsSync(dir)){
         fs.mkdirSync(dir);
     }
 
@@ -51,37 +52,28 @@ function scaricafoto(utente)
         });
     };
 
-    var len = utente.photos.length;
+    var len=utente.photos.length;
+    console.log("Lunghezza: "+len);
     var viaggi="";
-    for(i=0; i<len; i++)
-    {
-        var photo =utente.photos[i]; 
-        var url=photo.images[0].source;
-
-        if(photo.place!=undefined && photo.place.location!=undefined)
-        {
-            var citta=photo.place.location.city;
-            if(citta==undefined || citta==utente.hometown)
-                continue;
-            else
-            {
-                var data=photo.created_time+"_"+i;
-
-                var newdir = dir+'/'+citta;
-                if(!fs.existsSync(newdir))
-                {
-                    viaggi+=citta+"-";
+    for(i=0;i<len;i++){
+        var foto=utente.photos[i];
+        var url= foto.images[0].source;
+        if(foto.place!=undefined && foto.place.location!=undefined){
+            var city=foto.place.location.city;
+            if(city==undefined || city==utente.hometown) continue;
+            else{
+                var data=foto.created_time+"_"+i;
+                var newdir=dir+"/"+city;
+                if(!fs.existsSync(newdir)){
+                    viaggi+=city+"-";
                     fs.mkdirSync(newdir);
                 }
-
-                var path = newdir+'/'+data+'.jpg';
-        
+                var path=newdir+"/"+data+".jpg";
                 download(url,path, () => {
                     console.log("Done!");
                 });
             }
-        }
+        }   
     }
-
     return viaggi;
 }

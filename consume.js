@@ -1,7 +1,5 @@
-#!/usr/bin/env node
-
-var foto = require('./foto');
 var amqp = require('amqplib/callback_api');
+var foto= require('./foto');
 
 amqp.connect('amqp://localhost', function(error0, connection) {
     if (error0) {
@@ -12,19 +10,19 @@ amqp.connect('amqp://localhost', function(error0, connection) {
             throw error1;
         }
 
-        var queue = 'fotoQueue';
+        var queue = 'fotoqueue';
 
         channel.assertQueue(queue, {
             durable: false
         });
 
-        console.log("In attesa di messaggi...");
+        console.log("In attesa di messaggi\n");
 
         channel.consume(queue, function(msg) {
-            var info = JSON.parse(msg.content.toString());
-            var tok = info.tok;
-            var id_client = info.id_client;
-            foto.caricaFoto(tok, id_client);
+            var info=JSON.parse(msg.content.toString());
+            var tok=info.tok;
+            var id_client=info.id_client;
+            foto.caricaFoto(tok,id_client);
         }, {
             noAck: true
         });

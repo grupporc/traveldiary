@@ -1,0 +1,99 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "API per alcune funzionalità di Travel Diary",
+    "version" : "1.0.0",
+    "title" : "Travel Diary API",
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host" : "localhost:8888",
+  "basePath" : "/",
+  "schemes" : [ "http" ],
+  "paths" : {
+    "/travelapi/listaviaggi/{clientId}" : {
+      "get" : {
+        "summary" : "ritorna la lista dei viaggi dato un clientId",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "clientId",
+          "in" : "path",
+          "description" : "id dell'utente",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK lista viaggi"
+          },
+          "404" : {
+            "description" : "Content not found"
+          }
+        }
+      }
+    },
+    "/travelapi/cercaViaggio/{partenza}/{arrivo}/{data}" : {
+      "get" : {
+        "summary" : "ritorna una lista di voli disponibili dalla citta di partenza alla citta di arrivo in quella data",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "partenza",
+          "in" : "path",
+          "description" : "citta di partenza",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "arrivo",
+          "in" : "path",
+          "description" : "citta di arrivo",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "data",
+          "in" : "path",
+          "description" : "data yyyy-mm-dd",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK lista voli"
+          },
+          "204" : {
+            "description" : "Richiesta corretta ma nessun contenuto"
+          },
+          "404" : {
+            "description" : "Content not found"
+          }
+        }
+      }
+    },
+    "/travelapi/attrazioni/{citta}" : {
+      "get" : {
+        "summary" : "Ritorna le attrazioni principali della citta richiesta",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "citta",
+          "in" : "path",
+          "description" : "nome della citta richiesta",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK lista attrazioni"
+          },
+          "204" : {
+            "description" : "Richiesta corretta ma nessun contenuto"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : { }
+}

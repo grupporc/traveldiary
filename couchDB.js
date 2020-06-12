@@ -1,86 +1,74 @@
 require('dotenv').config();
 var request = require('request');
 
-function updateDB(req, arr_viaggi)
-{
-    if(req.session.rev==null)
-    {
+function updateDB(req, arrviaggi){
+    if(req.session.rev==null){
         //vedo se il mio documento è presente nel db
         request({
-            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
-            method: 'GET',
-            json: true,
-        }, function(error, response, body){
-            if(error)
-            {
-                if(response.statusCode==404)
-                {
+            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+            methond: 'GET',
+            json: true
+        }, function(error,response,body){
+            if(error){
+                if(response.statusCode==404){
                     //doc non esistente --> lo creo
+                    console.log(req.session.id_client);
                     request({
-                        url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+id_client,
+                        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                         method: 'PUT',
-                        body: { viaggi: arr_viaggi },
+                        body: {viaggi: arrviaggi},
                         json: true,
                     },function(error,response,body){
-                        if(error)
-                            console.log(error); 
-                        else
-                        {
-                            req.session.rev=info._rev;
-                            console.log("Aggiunto a database");
-                                                            
+                        if(error){
+                            console.log(error);
+                        } else{
+                            req.session.rev=body.rev;
+                            console.log("Aggiunto al database");
                             req.session.caricato=true;
-                            return "Success!";
+                            res.send("Success");
                         }
                     });
                 }
-            }
-            else
-            {
+            } 
+            else{
                 req.session.rev=body._rev;
-
-                //doc esistente --> lo modifico
+                console.log("doc esistente");
+                //aggiorno il doc esistente
                 request({
-                    url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                     method: 'PUT',
-                    body: { _rev: req.session.rev, viaggi: arr_viaggi},
+                    body: {_rev:req.session.rev, viaggi: arrviaggi},
                     json: true,
                 },function(error,response,body){
-                    if(error)
+                    if(error){
                         console.log(error);
-                    else
-                    {
-                        req.session.rev=info._rev;
+                    } else{
+                        req.session.rev=body.rev;
                         console.log("Aggiornato database");
-                            
                         req.session.caricato=true;
-                        return "Success!";
+                        res.send("Success");
                     }
-                });
+                }); 
             }
         });
     }
-    else
-    {
+    else{
         request({
-            url: "http://admin:Elena2412@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
             method: 'PUT',
-            body: { _rev: req.session.rev, viaggi: arr_viaggi},
+            body: {_rev:req.session.rev, viaggi: arrviaggi},
             json: true,
         },function(error,response,body){
-            if(error)
+            if(error){
                 console.log(error);
-            else
-            {
-                req.session.rev=info._rev;
+            } else{
+                req.session.rev=body.rev;
                 console.log("Aggiornato database");
-
                 req.session.caricato=true;
-                return "Success!";
+                res.send("Success");
             }
         });
     }
 }
 
 module.exports.updateDB = updateDB;
-

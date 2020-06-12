@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Login</title>
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"><link rel="stylesheet" href="foglistile/w3.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <style>
             body {
@@ -12,7 +12,7 @@
                 background-repeat: no-repeat;
                 background-size: 100% 100%;
             }
-            button {
+            button{
                 outline: none;
             }
         </style>
@@ -34,11 +34,11 @@
                     <div> <%= accessoGG %> </div>
                 </button>
             </div>
-            <div class="w3-panel w3-pale-green" style="margin-left:25%; width: 50%;">
-                <p>Per usufruire del servizio è necessario effettuare l'accesso sia con l'account Facebook che con l'account Google.</p>
-                <p> <%= errore %> </p>
+            <div class="w3-center w3-panel w3-pale-green" style="width: 50%; margin-left:25%"> 
+                <p> Per usufruire del servizio è necessario effettuare l'accesso sia con l'account Facebook che con Google <p>
+                <p> <%= errore %> </p>    
             </div>
-        </div>
+    </div>
     </body>
     <script>
         (function() {
