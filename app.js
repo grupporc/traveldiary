@@ -119,7 +119,7 @@ app.get("/token", function(req, res){
                             if(req.session.GGtoken==null)
                                 res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                             else
-                                res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                                res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Accesso Effettuato", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                         }
                         else
                         {
@@ -225,7 +225,7 @@ app.get('/diario', function(req,res){
                 console.log(hometown);
 
                 request({
-                    url: "https://graph.facebook.com/me/photos?limit=300&type=uploaded&fields=place,created_time,images.limit(1)&access_token="+req.session.FBtoken,
+                    url: "https://graph.facebook.com/me/photos?limit=500&type=uploaded&fields=place,created_time,images&access_token="+req.session.FBtoken,
                     method: 'GET',
                 }, function(error, response, body){
                     if(error)
