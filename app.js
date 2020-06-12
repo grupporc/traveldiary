@@ -527,7 +527,7 @@ function parseHTML(json,d) {
 app.get('/listaViaggi',function(req,res){
     //get da couch db
     request({
-        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+        url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.session.id_client,
         method: 'GET',
     },function(error,response,body){
         if(error){
@@ -596,7 +596,7 @@ app.get('/logout',function(req,res){
 //api fornite all'esterno della nostra app:
 app.get("/travelapi/listaviaggi/:clientId", function(req,res){
     request({
-        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.params.clientId,
+        url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.params.clientId,
         method: 'GET',
     },function(error,response,body){
         if(error){

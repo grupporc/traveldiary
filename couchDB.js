@@ -5,7 +5,7 @@ function updateDB(req, arrviaggi){
     if(req.session.rev==null){
         //vedo se il mio documento è presente nel db
         request({
-            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+            url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.session.id_client,
             methond: 'GET',
             json: true
         }, function(error,response,body){
@@ -14,7 +14,7 @@ function updateDB(req, arrviaggi){
                     //doc non esistente --> lo creo
                     console.log(req.session.id_client);
                     request({
-                        url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                        url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                         method: 'PUT',
                         body: {viaggi: arrviaggi},
                         json: true,
@@ -35,7 +35,7 @@ function updateDB(req, arrviaggi){
                 console.log("doc esistente");
                 //aggiorno il doc esistente
                 request({
-                    url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+                    url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.session.id_client,
                     method: 'PUT',
                     body: {_rev:req.session.rev, viaggi: arrviaggi},
                     json: true,
@@ -54,7 +54,7 @@ function updateDB(req, arrviaggi){
     }
     else{
         request({
-            url: "http://admin:ringo@127.0.0.1:5984/travel_diary/"+req.session.id_client,
+            url: "http://admin:"+process.env.PASSDB+"@127.0.0.1:5984/travel_diary/"+req.session.id_client,
             method: 'PUT',
             body: {_rev:req.session.rev, viaggi: arrviaggi},
             json: true,
