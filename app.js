@@ -8,8 +8,6 @@ var fs=require("fs");
 const swaggerUI= require('swagger-ui-express');
 const swaggerDocument= require('./swagger.json');
 
-app.use('/api-docs',swaggerUI.serve ,swaggerUI.setup(swaggerDocument));
-
 var rpc=require('./rpc_client');
 var eventi = require('./eventi');
 var db = require('./couchDB');
@@ -38,6 +36,8 @@ app.use(function(req,res,next) {
 });
 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use('/api-docs',swaggerUI.serve ,swaggerUI.setup(swaggerDocument));
 
 //VARIABILI FB
 var FBappId = process.env.APPIDFB;
