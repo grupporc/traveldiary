@@ -120,7 +120,7 @@ app.get("/token", function(req, res){
                             if(req.session.GGtoken==null)
                                 res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                             else
-                                res.render('login.ejs',{accessoFb: "Accesso Effettuato", accessoGG: "Entra con Google", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
+                                res.render('login.ejs',{accessoFb: "Entra con Facebook", accessoGG: "Accesso Effettuato", errore:"ERRORE: sono necessari tutti i permessi richiesti"});
                         }
                         else{
                             console.log("Permessi garantiti");
