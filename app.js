@@ -550,7 +550,10 @@ app.get('/listaViaggi',function(req,res){
                     };
                     request(opt, function(error, response, body){
                         lista.pop();
-                        if(response.statusCode==200)
+                        if (error){
+                            console.log(error);
+                        }
+                        else if(response.statusCode==200)
                         {
                             var resp = JSON.parse(body);
                             map=map+`var marker = new mapboxgl.Marker()
