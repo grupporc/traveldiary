@@ -40,7 +40,7 @@ Dopo aver premuto sul bottone ‘ottieni il mio diario’, le foto prelevate dal
 In base alla data un cui le foto sono state caricate su Facebook, viene aggiunto un evento corrispondete su Google Calendar. Anche in questo caso viene prima controllato che non esistano altri eventi per quella specifica data.   
 Per quanto riguarda la realizzazione ed il funzionamento della mappa, questo è reso possibile grazie a Mapbox. Ogni marker, corrispondente ad una precisa località, viene aggiunto alla mappa in seguito ad un’interrogazione al database (CouchDB). Il risultato della query è la lista di tutti i viaggi dell’utente. Ogni entry viene passata come parametro ad una GET ad OpenWeather. Questa richiesta è necessaria per ricevere informazioni riguardo alla latitudine e alla longitudine di un determinato luogo e dunque per il posizionamento e l’aggiunta del rispettivo marker.   
 Per eseguire il logout e cancellare la cartella di appoggio creata per la gestione e il caricamento delle foto l’applicazione web è dotata di un bottone apposito. 
-Le api fornite all'esterno e documentate tramite Swagger si possono accedere con localhost:888/api-docs.  
+Le api fornite all'esterno e documentate tramite Swagger si possono accedere con localhost:8888/api-docs.  
 
 
 ### SetUp iniziale
