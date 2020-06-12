@@ -43,7 +43,7 @@ Per eseguire il logout e cancellare la cartella di appoggio creata per la gestio
 
 
 ### SetUp iniziale
-Per poter utilizzare l’applicazione è necessario avviare su Docker RabbitMQ e CoachDB.  
+Per poter utilizzare l’applicazione è necessario avviare su Docker RabbitMQ e CouchDB.  
    
 I moduli necessari per l’applicazione sono:   
 $ npm install express  
