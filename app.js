@@ -239,7 +239,7 @@ app.get('/diario', function(req,res){
                                 //se vuoto non aggiorno il database
                                 if(arrviaggi[0]!=""){
                                     //carico sul database 
-                                    res.send(db.updateDB(req, arr_viaggi));
+                                    res.send(db.updateDB(req, arrviaggi));
                                 }
                                 else{
                                     req.session.caricato=true;
