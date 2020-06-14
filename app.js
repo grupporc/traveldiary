@@ -104,7 +104,6 @@ app.get("/token", function(req, res){
                     else 
                     {
                         var data = JSON.parse(body).data;
-                        //console.log(data);
                         var count=0;
                         if(data!=undefined){
                             for(i=0;i<data.length;i++){
@@ -158,7 +157,6 @@ app.get("/tokenGG", function(req, res){
             }
             else{
                 var info=JSON.parse(body);
-                //console.log(info);
                 if(info.scope.length<2)
                 {
                     //non ha garantito tutti i permessi
