@@ -149,7 +149,6 @@ app.get("/tokenGG", function(req, res){
     //andato a buon fine
     if (req.query.code){
         var autcode=req.query.code;
-        console.log(autcode);
         request({
             url: "https://oauth2.googleapis.com/token?client_id="+GGappId+"&client_secret="+GGsecretKey+"&code="+autcode+"&redirect_uri=http://localhost:8888/tokenGG&grant_type=authorization_code",
             method: 'POST',
