@@ -443,13 +443,17 @@ app.post('/cercaViaggio',function(req,res){
                                 else{
                                     var info=JSON.parse(body);var voloOK = false;
 
+                                    if(info==undefined || info.Quotes==undefined || info.Quotes.length==0 ){
+                                        res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>", data: "", luogo: "", button: "Torna alla Home"});
+                                    }
+
                                     for ( var i = 0; i < info.Quotes.length; i++){
                                         if (data == info.Quotes[i].OutboundLeg.DepartureDate.split('T')[0]){
                                             voloOK = true;
                                         }
                                     }
 
-                                    if(info==undefined || info.Quotes==undefined || info.Quotes.length==0 || voloOK == false){
+                                    if(voloOK == false){
                                         res.render('voli.ejs',{voli: "<br><br><hr>Nessun volo disponibile con le opzioni da lei richieste!<hr><img src='img/noresult.png' style='height: 300px; width: 500px;'<br><br>", data: "", luogo: "", button: "Torna alla Home"});
                                     }
                                     else{
